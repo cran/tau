@@ -1,0 +1,6 @@
+useDynLib("tau")
+export("parse_IETF_language_tag",
+       "remove_stopwords",
+       "textcnt",
+       "tokenize",
+       "translate_Unicode_latin_ligatures")
