@@ -8,48 +8,31 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <langinfo.h>
 #include <time.h>
 
 // character translation
 
 #define __TRANSLATE
 
-// the encoding of the locale is UTF-8.
-
-extern Rboolean utf8locale;
+// the encoding of the locale
 static Rboolean known_to_be_utf8   = FALSE;
 static Rboolean known_to_be_latin1 = FALSE;
 
-// FIXME
-//
-// the variable is not exposed (see src/include Defun.h and
-// src/main/platform.c the source code). I guess the reason
-// is that these variables are for Windoze not UNIX.
-//
-// note that it does not make sense to duplicate code from R
-// release to R release this will be UNIX only if there will
-// be no public variables or interfaces.
+// workaround missing API functions [2009/8]
+static Rboolean utf8locale(void) {
+    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
+		R_GlobalEnv), 1));
+}
 
-Rboolean latin1locale(void) {
-#ifdef _LANGINFO_H
-    char *p = nl_langinfo(CODESET);
-    if (strcmp(p, "ISO-8859-1") == 0)
-	return TRUE;
-#endif
-#ifdef WIN32
-    {
-	extern int localeCP;
-	return (localeCP = 1252);
-    }
-#endif
-    return FALSE;
+static Rboolean latin1locale(void) {
+    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
+		R_GlobalEnv), 2));
 }
 
 /* FIXME
  *
  * although the code is still in the source code it is no longer
- * accessible under R-2.7.0.
+ * accessible since R-2.7.0.
  *
 for details see src/extra/pcre/pcre_valid.c in the R source code.
 
@@ -248,10 +231,10 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
     SEXP r, s;
 
     if (!persistent) {
-	known_to_be_utf8   = utf8locale;
+	known_to_be_utf8   = utf8locale();
 	known_to_be_latin1 = latin1locale();
     } else
-    if (known_to_be_utf8   != utf8locale ||
+    if (known_to_be_utf8   != utf8locale() ||
 	known_to_be_latin1 != latin1locale())
 	error_reset("change of locale in persistent mode");
     persistent = LOGICAL(R_persistent)[0];
@@ -456,10 +439,10 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
     SEXP r, s;
 
     if (!persistent) {
-	known_to_be_utf8   = utf8locale;
+	known_to_be_utf8   = utf8locale();
 	known_to_be_latin1 = latin1locale();
     } else
-    if (known_to_be_utf8   != utf8locale ||
+    if (known_to_be_utf8   != utf8locale() ||
         known_to_be_latin1 != latin1locale())
 	error_reset("change of locale in persistent mode");
     persistent = LOGICAL(R_persistent)[0];

@@ -42,10 +42,12 @@ x
 t <- paste(x, collapse = "")
 t
 
-words <- readLines(system.file("stopwords", "english.dat",
-                               package = "tm"))
-remove_stopwords(x, words)
-remove_stopwords(t, words, lines = TRUE)
+if (require("tm", quietly = TRUE)) {
+    words <- readLines(system.file("stopwords", "english.dat",
+                       package = "tm"))
+    remove_stopwords(x, words)
+    remove_stopwords(t, words, lines = TRUE)
+}
 }
 \keyword{utilities}
 \keyword{character}
