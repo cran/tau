@@ -2,5 +2,6 @@ useDynLib("tau")
 export("parse_IETF_language_tag",
        "remove_stopwords",
        "textcnt",
+       "is.utf8", "is.locale", "translate", "fixEncoding",
        "tokenize",
        "translate_Unicode_latin_ligatures")

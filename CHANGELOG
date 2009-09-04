@@ -1,0 +1,30 @@
+2009-09-04  0.0-3
+
+    o	Make Unicode latin ligature translation work "portably".
+
+2009-09-01  0.0-3
+
+    o	Migrated encoding utilities.
+
+2009-08-31  0.0-2
+
+    o	We now call l10n_info from C to avoid problems on
+	non-Linux platforms with langinfo.h 
+
+2009-08-24  0.0-2
+
+    o	Migrated core utilities to CRAN package tau.
+    o	Fixed to SET_STRING_ELT in C code.
+
+2009-01-15  0.1-2
+
+    o	Added counting of word-sequences.
+
+2008-04-30  0.1-1   Initial Release
+
+    o	Provide efficient C-level counting of n-grams, affixes,
+	or words.
+
+    o	Provide utilities for tokenizing, stopword removal, and
+	other preprocessing tasks.
+

@@ -1,0 +1,143 @@
+
+R version 2.7.0 Patched (2008-04-27 r45515)
+Copyright (C) 2008 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> ### ceeboo 2008
+> 
+> library("taTools")
+> 
+> .format.count <- function(x)
++     data.frame(counts = x, size = nchar(x), stringsAsFactors = FALSE)
+> 
+> ## latin capital letter a with diaresis
+> 
+> t1 <- c("abc", "a\xc4", "", NA)
+> Encoding(t1) <- c("unknow", "latin1", "unknown", "unknown") 
+> t1
+[1] "abc"   "aÄ"    ""      NA     
+> 
+> t2 <- c(paste("_", t1[1:2], "_", sep = ""), t1[3:4])
+> t2
+[1] "_abc_" "_aÄ_"  ""      NA     
+> 
+> ## count n-grams
+> r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE)
+counting ... 9 string(s= using 19 nodes [0.00s]
+writing  ... 16 strings [0.00s]
+> .format.count(r)
+    counts size
+_        4    1
+_a       2    1
+_ab      1    1
+_aÄ      1    1
+a        2    1
+ab       1    1
+abc      1    1
+aÄ       1    1
+aÄ_      1    1
+b        1    1
+bc       1    1
+bc_      1    1
+c        1    1
+c_       1    1
+Ä        1    1
+Ä_       1    1
+> 
+> ## incremental
+> .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, TRUE)
+counting ... 9 string(s= using 19 nodes [0.00s]
+NULL
+> r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE)
+counting ... 9 string(s= using 19 nodes [0.00s]
+writing  ... 16 strings [0.00s]
+> .format.count(r)
+    counts size
+_        8    1
+_a       4    1
+_ab      2    1
+_aÄ      2    1
+a        4    1
+ab       2    1
+abc      2    1
+aÄ       2    1
+aÄ_      2    1
+b        2    1
+bc       2    1
+bc_      2    1
+c        2    1
+c_       2    1
+Ä        2    1
+Ä_       2    1
+> 
+> ## count strings
+> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE)
+counting ... 2 string(s) using 5 nodes [0.00s]
+writing  ... 2 strings [0.00s]
+> .format.count(r)
+    counts size
+abc      1    1
+aÄ       1    1
+> 
+> ## count prefixes
+> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 1L, TRUE, FALSE)
+counting ... 2 string(s) using 5 nodes [0.00s]
+writing  ... 4 strings [0.00s]
+> .format.count(r)
+    counts size
+a        2    1
+ab       1    1
+abc      1    1
+aÄ       1    1
+> 
+> ## count suffixes
+> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 2L, TRUE, FALSE)
+counting ... 2 string(s) using 6 nodes [0.00s]
+writing  ... 5 strings [0.00s]
+> .format.count(r)
+    counts size
+c        1    1
+bc       1    1
+abc      1    1
+Ä        1    1
+aÄ       1    1
+> 
+> ## FIXME add to interface
+> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 3L, TRUE, FALSE)
+counting ... 2 string(s) using 6 nodes [0.00s]
+writing  ... 5 strings [0.00s]
+> .format.count(r)
+    counts size
+c        1    1
+cb       1    1
+cba      1    1
+Ä        1    1
+Äa       1    1
+> 
+> ## incremental
+> .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, TRUE)
+counting ... 2 string(s) using 5 nodes [0.00s]
+NULL
+> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE)
+counting ... 2 string(s) using 5 nodes [0.00s]
+writing  ... 2 strings [0.00s]
+> .format.count(r)
+    counts size
+abc      2    1
+aÄ       2    1
+> 
+> ###
+> 
