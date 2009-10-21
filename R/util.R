@@ -28,13 +28,14 @@ function(x, words, lines = FALSE)
     if (!is.character(words))
         stop("'words' not a character")
     if (lines) {
-        ## FIXME perl prefers partial matches
-        words <- paste("\\<(", paste(words, collapse = "|"),
-            ")\\>", sep = "", collapse = "")
-        x <- gsub(words, "", x, ignore.case = TRUE)
-        ## FIXME remove ""?
+        ## FIXME perl prefers partial matches. For now
+	##       we protect hyphenated words and infix
+	##       apostrophes.
+        words <- paste("\\b(?<!-)(", paste(words, collapse = "|"),
+            ")(?!(-|'\\b))\\b", sep = "", collapse = "")
+        x <- gsub(words, "", x, ignore.case = TRUE, perl = TRUE)
     } else {
-        i <- match(tolower(x), words)
+        i <- match(tolower(x), tolower(words))
         x <- x[is.na(i)]
     }
     x

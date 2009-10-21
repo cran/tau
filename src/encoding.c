@@ -34,6 +34,32 @@ static int _valid_ascii(const unsigned char *s, int l) {
     return l;
 }
 
+// test for ASCII
+//
+
+SEXP R_isASCII(SEXP x) {
+    if (TYPEOF(x) != STRSXP)
+	error("'x' not of type character");
+    int i, l;
+    SEXP s, r = PROTECT(allocVector(LGLSXP, LENGTH(x)));
+
+    for (i = 0; i < LENGTH(x); i++) {
+	s = STRING_ELT(x, i);
+	l = LENGTH(s);
+	if (!l)
+	    LOGICAL(r)[i] = TRUE;
+	else
+	if (_valid_ascii((const unsigned char *) CHAR(s), l) < 0)
+	    LOGICAL(r)[i] = TRUE;
+	else
+	    LOGICAL(r)[i] = FALSE;
+    }
+    UNPROTECT(1);
+
+    return r;
+}
+
+
 // test for strict UTF-8.
 //
 // shame on R that we have to provide this!
@@ -45,7 +71,7 @@ SEXP R_isUTF8(SEXP x) {
     SEXP s, r = PROTECT(allocVector(LGLSXP, LENGTH(x)));
 
     for (i = 0; i < LENGTH(x); i++) {
-	s = VECTOR_ELT(x, i);
+	s = STRING_ELT(x, i);
 	l = LENGTH(s);
 	if (!l)
 	    LOGICAL(r)[i] = FALSE;
@@ -80,7 +106,7 @@ SEXP R_fixEncoding(SEXP x, SEXP R_latin1) {
 
     n = 0;
     for (i = 0; i < LENGTH(x); i++) {
-	s = VECTOR_ELT(x, i);
+	s = STRING_ELT(x, i);
 	l = LENGTH(s);
 	e = getCharCE(s);
 	if (l) {
@@ -137,7 +163,7 @@ SEXP R_isLocale(SEXP x) {
     SEXP s, r = PROTECT(allocVector(LGLSXP, LENGTH(x)));
 
     for (i = 0; i < LENGTH(x); i++) {
-	s = VECTOR_ELT(x, i);
+	s = STRING_ELT(x, i);
 	l = LENGTH(s);
 	if (!l)
 	    LOGICAL(r)[i] = TRUE;
@@ -178,7 +204,7 @@ SEXP R_translateToLocale(SEXP x) {
     
     n = 0;
     for (i = 0; i < LENGTH(x); i++) {
-	s = VECTOR_ELT(x, i);
+	s = STRING_ELT(x, i);
 	c = translateChar(s);
 	if (c != CHAR(s)) {
 	    if (_pcre_valid_utf8((const unsigned char *) c, -1) < 0) {

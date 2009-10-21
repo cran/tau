@@ -1,3 +1,7 @@
+2009-09-xx 0.0-4
+
+    o	Fixed blank strings in word-sequence counting.
+
 2009-09-04  0.0-3
 
     o	Make Unicode latin ligature translation work "portably".

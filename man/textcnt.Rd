@@ -1,5 +1,6 @@
 \name{textcnt}
 \alias{textcnt}
+\alias{format.textcnt}
 \title{Term or Pattern Counting of Text Documents}
 \description{
   This function provides a common interface to perform typical term or
@@ -8,15 +9,17 @@
 \usage{
 textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
         tolower = TRUE, marker = "_", words = NULL, lower = 0L,
-	method = c("ngram", "string", "prefix", "suffix"),
-	recursive = FALSE, persistent = FALSE, verbose = FALSE,
-	decreasing = FALSE)
+        method = c("ngram", "string", "prefix", "suffix"),
+        recursive = FALSE, persistent = FALSE, useBytes = FALSE,
+        verbose = FALSE, decreasing = FALSE)
+
+\S3method{format}{textcnt}(x, ...)
 }
 \arguments{
   \item{x}{a (list of) vector(s) of character representing one (or more)
     text document(s).}
   \item{n}{the maximum number of characters considered in ngram,
-    prefix, or suffix counting (irrelevant for word counting).}
+    prefix, or suffix counting (for word counting see details).}
   \item{split}{the regular expression pattern to be used in word splitting 
     (if \code{NULL}, do nothing).}
   \item{tolower}{option to transform the documents to lowercase (after
@@ -30,15 +33,18 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   \item{recursive}{option to compute counts for individual documents
     (default all documents).}
   \item{persistent}{option to count documents incrementally.}
+  \item{useBytes}{option to process byte-by-byte instead 
+    character-by-character.}
   \item{verbose}{option to obtain timing statistics.}
   \item{decreasing}{option to return the counts in decreasing order.}
+  \item{\dots}{further (unused) arguments.}
 }
 \details{
   The following counting methods are currently implemented:
 
   \describe{
-    \item{\code{ngram}}{Count all n-grams of order 1,\dots,\code{n}.}
-    \item{\code{string}}{Count all word (term) n-grams.}
+    \item{\code{ngram}}{Count all word n-grams of order 1,\dots,\code{n}.}
+    \item{\code{string}}{Count all word sequence n-grams of order \code{n}.}
     \item{\code{prefix}}{Count all word prefixes of at most length \code{n}.}
     \item{\code{suffix}}{Count all word suffixes of at most length \code{n}.}
   }
@@ -47,7 +53,9 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   \code{n = min(length(word), n)} starting at positions
   1,\dots,\code{length(word)-n}.  Note that the value of \code{marker}
   is pre- and appended to word before counting. However, the empty word
-  is never marked and therefore not counted.
+  is never marked and therefore not counted. Note that
+  \code{marker = "\1"} is reserved for counting of an efficient set
+  of ngrams (see the reference below).
 
   If \code{method = "string"} word-sequences of and only of length
   \code{n} are counted. Therefore, documents with less than \code{n}
@@ -72,19 +80,26 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   is a valid \code{"UTF-8"} string and stops if not. Otherwise, strings
   are processed bytewise without any checks. However, embedded \code{nul}
   bytes are always removed from a string. Finally, note that during
-  incremental counting a change of locale is not allowed.
+  incremental counting a change of locale is not allowed (and a change
+  in method is not recommended).
 
   Note that the C implementation counts words into a prefix tree.
   Whereas this is highly efficient for n-gram, prefix, or suffix counting
   it may be less efficient for simple word counting. That is, implementations
   which use hash tables may be more efficient if the dictionary is large.
+
+  \code{format.textcnt} pretty prints a named vector of counts (see below)
+  including information about the rank and encoding details of the strings.
 }
 \value{
   Either a single vector of counts of mode \code{integer} with the names
   indexing the patterns counted, or a list of such vectors with the
   components corresponding to the individual documents. Note that by
   default the counts are in prefix tree (byte) order (for
-  \code{method = "suffix"} this is the order of the reversed strings). 
+  \code{method = "suffix"} this is the order of the reversed strings).
+  Otherwise, if \code{decreasing = TRUE} the counts are sorted in 
+  decreasing order. Note that the (default) order of ties is preserved
+  (see \code{\link{sort}}).
 }
 \author{Christian Buchta}
 \note{
@@ -99,6 +114,9 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   Therefore, in order to avoid excessive memory consumption it is
   recommended to either translate the input data to the current locale
   or to process the data incrementally.
+
+  \code{useBytes} may not be fully functional with R versions where
+  \code{strsplit} does not support that argument.
 }
 \examples{
 ## the classic
@@ -109,7 +127,8 @@ textcnt(txt, method = "ngram")
 textcnt(txt, method = "prefix", n = 5L)
 
 r <- textcnt(txt, method = "suffix", lower = 1L)
-data.frame(counts = unclass(r), size = nchar(r))
+data.frame(counts = unclass(r), size = nchar(names(r)))
+format(r)
 
 ## word sequences
 textcnt(txt, method = "string")
@@ -133,6 +152,10 @@ txt
 r <- textcnt(txt, method = "suffix")
 table(Encoding(names(r)))
 r
+## efficient sets
+textcnt("is",     n = 3L, marker = "\1")
+textcnt("is",     n = 4L, marker = "\1")
+textcnt("corpus", n = 5L, marker = "\1")
 ##
 }
 \keyword{utilities}

@@ -47,7 +47,8 @@ if (require("tm", quietly = TRUE)) {
                        package = "tm"))
     remove_stopwords(x, words)
     remove_stopwords(t, words, lines = TRUE)
-}
+} else
+    remove_stopwords(t, words = c("it", "it's"), lines = TRUE)
 }
 \keyword{utilities}
 \keyword{character}

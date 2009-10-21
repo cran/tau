@@ -18,6 +18,8 @@
 static Rboolean known_to_be_utf8   = FALSE;
 static Rboolean known_to_be_latin1 = FALSE;
 
+static Rboolean use_bytes = FALSE;
+
 // workaround missing API functions [2009/8]
 static Rboolean utf8locale(void) {
     return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
@@ -121,6 +123,8 @@ static unsigned char cbuf[__CBUF_SIZE];	// token buffer
 // 
 
 static cetype_t get_known_encoding(void) {
+    if (use_bytes)
+	return CE_NATIVE;
     if (enc) {
 	if (known_to_be_utf8)
 	    return CE_UTF8;
@@ -156,7 +160,8 @@ static void cpnretprefix(CPN *p, int n) {
     Rprintf(" %3i %i %s\n", p->count, enc, cbuf);
 #endif
     if (p->count > tcnt) {
-	if (!known_to_be_utf8 ||
+	if (use_bytes ||
+	    !known_to_be_utf8 ||
 	    !p->pl || (p->pl->index & 0xC0) != 0x80) {
 	    rval = CONS(ScalarInteger(p->count), rval);
 #ifndef __DEBUG
@@ -210,7 +215,7 @@ static void error_reset(const char *msg) {
 }
 
 SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
-		      SEXP R_persistent) {
+		      SEXP R_persistent, SEXP R_useBytes) {
     if (!persistent && rpn) {
 	cpnfree(rpn);
 	rpn = 0;
@@ -226,6 +231,8 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	error("'verbose' not of type logical");
     if (isNull(R_persistent) || TYPEOF(R_persistent) != LGLSXP)
 	error("'persistent' not of type logical");
+    if (isNull(R_useBytes) || TYPEOF(R_useBytes) != LGLSXP)
+	error("'useBytes' not of type logical");
     int h, i, j, k, l, m, n;
     const unsigned char *c;
     SEXP r, s;
@@ -233,7 +240,11 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
     if (!persistent) {
 	known_to_be_utf8   = utf8locale();
 	known_to_be_latin1 = latin1locale();
+	use_bytes          = *LOGICAL(R_useBytes);
     } else
+    if (use_bytes != *LOGICAL(R_useBytes))
+	error("change of useBytes in persistent mode");
+    else
     if (known_to_be_utf8   != utf8locale() ||
 	known_to_be_latin1 != latin1locale())
 	error_reset("change of locale in persistent mode");
@@ -274,14 +285,18 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	    if (s == NA_STRING || !l)
 		continue;
 #ifdef __TRANSLATE
-	    c = (const unsigned char *) translateChar(s);
-	    l = strlen((const char *) c);
+	    if (!use_bytes) {
+		c = (const unsigned char *) translateChar(s);
+		l = strlen((const char *) c);
+	    } else
+		c = (const unsigned char *) CHAR(s);
 #else
 	    c = (const unsigned char *) CHAR(s);
 #endif
 	    // strings of unknown encoding are not
 	    // translated, so we have to check.
-	    if (known_to_be_utf8 &&
+	    if (!use_bytes &&
+		known_to_be_utf8 &&
 		_pcre_valid_utf8(c, l) >= 0)
 		error_reset("not a valid UTF-8 string");
 	    /* in an UTF-8 multibyte sequence any byte
@@ -289,27 +304,43 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	     * thus, 1) the byte cannot be the start of a
 	     * suffix and 2) we have to expand the current
 	     * window.
+	     *
+	     * '\1' is a special boundary marker that triggers
+	     * reduced counting, ie omission of windows which
+	     * start at a boundary and shrinkage of windows
+	     * which end at a boundary.
 	     */
+	    int b;
 	    for (k = 0; k < l; k++) {
 		if (c[k] == '\0')
 		    continue;
-		if (known_to_be_utf8 &&
+		if (!use_bytes &&
+		    known_to_be_utf8 &&
 		    (c[k] & 0xC0) == 0x80)
+		    continue;
+		if (k == 1 && c[0] == '\1')
 		    continue;
 		h = 0;
 		m = k;
+		b = k;
 		while (m < l) {
 		    if (m-k < __CBUF_SIZE)
 			cbuf[m-k] = c[m];
 		    else 
 			error_reset("cannot copy string to buffer");
-		    if (!known_to_be_utf8 ||
+		    if (use_bytes ||
+			!known_to_be_utf8 ||
 			(c[m] & 0xC0) != 0x80) {
 			h++;
 			if (h > n) {
 			    h--;
+			    if (c[m] == '\1') {
+				h--;
+				m = b;
+			    }
 			    break;
 			}
+			b = m;
 		    }
 		    m++;
 		}
@@ -329,7 +360,7 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 #ifdef _TIME_H
     t1 = clock();
     if (LOGICAL(R_verbose)[0] == TRUE) {
-	Rprintf(" %i string(s= using %i nodes [%.2fs]\n", nap, ncpn,
+	Rprintf(" %i string(s) using %i nodes [%.2fs]\n", nap, ncpn,
 		((double) t1 - t0) / CLOCKS_PER_SEC);
 	if (!persistent)
 	    Rprintf("writing  ...");
@@ -387,7 +418,8 @@ static int reverse_copy_utf8(const unsigned char *x, int l, int n) {
 	    cbuf[h] = x[l];
 	else 
 	    break;
-	if (known_to_be_utf8) {
+	if (!use_bytes &&
+	    known_to_be_utf8) {
 	    if ((x[l] & 0xC0) == 0x80)
 		m++;
 	    else {
@@ -416,7 +448,7 @@ static int reverse_copy_utf8(const unsigned char *x, int l, int n) {
 // and return counts greater than lower.
 
 SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
-		       SEXP R_verbose, SEXP R_persistent) {
+		       SEXP R_verbose, SEXP R_persistent, SEXP R_useBytes) {
     if (!persistent && rpn) {
 	cpnfree(rpn);
 	rpn = 0;
@@ -434,6 +466,8 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 	error("'verbose' not of type logical");
     if (isNull(R_persistent) || TYPEOF(R_persistent) != LGLSXP)
 	error("'persistent' not of type logical");
+    if (isNull(R_useBytes) || TYPEOF(R_useBytes) != LGLSXP)
+	error("'useBytes' not of type logical");
     int h, i, j, k, l, n = 0, type;
     const unsigned char *c;
     SEXP r, s;
@@ -441,7 +475,11 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
     if (!persistent) {
 	known_to_be_utf8   = utf8locale();
 	known_to_be_latin1 = latin1locale();
+	use_bytes          = *LOGICAL(R_useBytes);
     } else
+    if (use_bytes != *LOGICAL(R_useBytes))
+	error("change of useBytes in persistent mode");
+    else
     if (known_to_be_utf8   != utf8locale() ||
         known_to_be_latin1 != latin1locale())
 	error_reset("change of locale in persistent mode");
@@ -494,12 +532,16 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 	    if (s == NA_STRING || !l)
 		continue;
 #ifdef __TRANSLATE
-	    c = (const unsigned char *) translateChar(s);
-	    l = strlen((const char *) c);
+	    if (!use_bytes) {
+		c = (const unsigned char *) translateChar(s);
+		l = strlen((const char *) c);
+	    } else
+		c = (const unsigned char *) CHAR(s);
 #else
 	    c = (const unsigned char *) CHAR(s);
 #endif
-	    if (known_to_be_utf8 &&
+	    if (!use_bytes &&
+		known_to_be_utf8 &&
 		_pcre_valid_utf8(c, l) >= 0)
 		error_reset("not a valid UTF-8 string");
 	    if (type > 1) {
@@ -516,7 +558,8 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 			cbuf[k] = c[k];
 		    else 
 			error_reset("cannot copy string to buffer");
-		    if (!known_to_be_utf8 ||
+		    if (use_bytes ||
+			!known_to_be_utf8 ||
 			(c[k] & 0xC0) != 0x80) {
 			h++;
 			if (h > n)
@@ -660,26 +703,51 @@ SEXP R_copyToNgram(SEXP x, SEXP R_n) {
 	error("'x' not of type character");
     if (TYPEOF(R_n) != INTSXP)
 	error("'n' not of type integer");
-    int i, j, k, n, m;
+    int i, j, k, n;
     SEXP s, r;
     
     n = *INTEGER(R_n);
     if (n < 1)
 	error("'n' invalid value");
     if (n > LENGTH(x))
-	return R_NilValue;
+	return allocVector(VECSXP, 0);
+
     r = PROTECT(allocVector(VECSXP, LENGTH(x) - n + 1));
 
-    k = 0;
     for (i = 0; i < LENGTH(x) - n + 1; i++) {
-	SET_VECTOR_ELT(r, k++, (s = allocVector(STRSXP, n)));
-	m = 0;
+	SET_VECTOR_ELT(r, i, (s = allocVector(STRSXP, n)));
+	k = 0;
 	for (j = i; j < i + n; j++)
-	    SET_STRING_ELT(s, m++, STRING_ELT(x, j));
+	    SET_STRING_ELT(s, k++, STRING_ELT(x, j));
     }
     UNPROTECT(1);
 
     return r;
+}
+
+// remove blank strings from a vector of character.
+
+SEXP R_removeBlank(SEXP x) {
+    if (TYPEOF(x) != STRSXP)
+	error("'x' not of type character");
+    int i, n;
+
+    n = 0;
+    for (i = 0; i < LENGTH(x); i++)
+	if (STRING_ELT(x, i) == R_BlankString)
+	    n++;
+    if (n) {
+	SEXP r = allocVector(STRSXP, LENGTH(x) - n);
+
+	n = 0;
+	for (i = 0; i < LENGTH(x); i++)
+	    if (STRING_ELT(x, i) != R_BlankString)
+		SET_STRING_ELT(r, n++, STRING_ELT(x, i));
+
+	return r;	
+    }
+
+    return x;
 }
 
 //

@@ -3,6 +3,10 @@
 ##
 ## ceeboo 2008
 
+is.ascii <-
+function(x)
+    .Call("R_isASCII", x)
+
 is.utf8 <-
 function(x)
     .Call("R_isUTF8", x)

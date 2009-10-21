@@ -12,52 +12,109 @@ textcnt <-
 function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
          tolower = TRUE, marker = "_", words = NULL, lower = 0L,
          method = c("ngram", "string", "prefix", "suffix"),
-         recursive = FALSE, persistent = FALSE, verbose = FALSE,
-         decreasing = FALSE)
+         recursive = FALSE, persistent = FALSE, useBytes = FALSE,
+	 verbose = FALSE, decreasing = FALSE)
 {
-    n <- as.integer(n)
     if (is.list(x)) {
         if (recursive) {
             if (persistent) {
                 for (z in x[-length(x)])
                     textcnt(z, n, split, tolower, marker, words, lower,
-                            method, recursive, persistent, verbose)
+                            method, recursive, persistent, useBytes, verbose)
                 x <- x[length(x)]
                 persistent <- FALSE
             } else
-                return (lapply(x, textcnt, n, split, tolower, marker, words,
-                            lower, method, recursive, persistent, verbose))
+                return(lapply(x, textcnt, n, split, tolower, marker, words,
+                              lower, method, recursive, persistent, useBytes,
+			      verbose))
         }
     } else {
         if (is.null(x)) return (x)
         x <- list(x)
     }
+    n <- as.integer(n)
+    if (n < 0L)
+	stop("'n' invalid value")
+    ## shortcut
+    if (n < 1L)
+	return(NULL)
     method <- match.arg(method)
     if (!is.null(split))
-        x <- lapply(lapply(x, strsplit, split), unlist)
-    if (tolower)
+	if (!is.null(formals(strsplit)$useBytes))
+	    x <- lapply(lapply(x, strsplit, split, useBytes = useBytes), unlist)
+	else
+	    x <- lapply(lapply(x, strsplit, split), unlist)
+    if (!useBytes && 
+        tolower)
         x <- lapply(x, tolower)
     if (!is.null(words))
         x <- .Call("R_copyTruncate", x, words)
-    x <- if (method == "ngram") {
+    if (method == "ngram") {
         ## add marker at both ends
         x <- lapply(x, function(x) gsub("^(?!$)|$(?<!^)", marker, x,
-                                        perl = TRUE))
-        .Call("R_utf8CountNgram", x, n, lower, verbose, persistent)
+                                        perl = TRUE, useBytes = useBytes))
+        x <- .Call("R_utf8CountNgram", x, n, lower, verbose, persistent, 
+				       useBytes)
+	## <NOTE>
+	## Because of its design the C code can only adjust the prefix
+	## counts. Here we handle the suffix counts. Obviously, a suffix
+	## without the marker is a prefix to that suffix and thus the
+	## former contains the counts of the latter. Note that this
+	## includes the special case of a string that is both, a prefix
+	## and a suffix. [2009/9]
+	## </NOTE>
+	if (length(x) && marker == "\1") {
+	    ## Determine suffixes.
+	    i <- grep("\1$", names(x), useBytes = useBytes)
+	    ## Match suffixes, including the marker.
+	    m <- gsub("\1$(?<!^\1)", "", names(x)[i], perl = TRUE,
+		      useBytes = useBytes)
+	    m <- match(m, names(x), nomatch = 0L)
+	    i <- i[m > 0]
+	    m <- m[m > 0]
+	    x[m] <- x[m] - x[i]	    ## reduce counts
+	    x <- x[x > 0]	    ## remove
+	    ## Replace with the default marker.
+	    names(x) <- gsub("^\1|\1$", formals(textcnt)$marker, names(x),
+                             useBytes = useBytes)
+	}
     } else {
         ## preprocess 
-        if (method == "string" && n > 1L)
-            x <- lapply(x, function(x) 
-                unlist(lapply(.Call("R_copyToNgram", x, n), paste,
-                    collapse = " ")))
-        .Call("R_utf8CountString", x, n, lower,
-              match(method, c("string", "prefix", "suffix")) - 1L, 
-              verbose, persistent)
+	if (method == "string" && n > 1L) 
+	    x <- lapply(x, function(x) {
+		x <- .Call("R_removeBlank", x)
+		x <- unlist(lapply(.Call("R_copyToNgram", x, n), paste,
+		    	           collapse = " "))
+		if (is.null(x))
+		    x <- ""
+		x
+	    })
+        x <- .Call("R_utf8CountString", x, n, lower,
+                   match(method, c("string", "prefix", "suffix")) - 1L, 
+                   verbose, persistent, useBytes)
     }
     if (!is.null(x)) {
+	## Note ties are not reordered (see help sort) which
+        ## means they are in prefix-tree order.
         if (decreasing)
             sort(x, decreasing = TRUE) -> x
         class(x) <- "textcnt"
     }
     x
 }
+
+## util
+format.textcnt <- 
+function(x, ...)
+    data.frame(
+	frq = c(x),
+	rank = rank(c(x)),
+        bytes = nchar(names(x), type = "bytes", allowNA = TRUE),
+	ascii = is.ascii(names(x)),
+	Encoding = Encoding(names(x)),
+        row.names = names(x),
+        stringsAsFactors = FALSE
+    )
+
+
+###

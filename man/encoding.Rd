@@ -1,5 +1,6 @@
 \name{encoding}
 \alias{is.utf8}
+\alias{is.ascii}
 \alias{is.locale}
 \alias{translate}
 \alias{fixEncoding}
@@ -10,6 +11,7 @@
 }
 \usage{
 is.utf8(x)
+is.ascii(x)
 is.locale(x)
 
 translate(x, recursive = FALSE, internal = FALSE)
@@ -59,6 +61,7 @@ fixEncoding(x, latin1 = FALSE)
 text <- c("aa", "a\xe4")
 Encoding(text) <- c("unknown", "latin1")
 is.utf8(text)
+is.ascii(text)
 is.locale(text)
 ## implicit translation
 text
