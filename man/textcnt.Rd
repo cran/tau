@@ -20,8 +20,8 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
     text document(s).}
   \item{n}{the maximum number of characters considered in ngram,
     prefix, or suffix counting (for word counting see details).}
-  \item{split}{the regular expression pattern to be used in word splitting 
-    (if \code{NULL}, do nothing).}
+  \item{split}{the regular expression pattern (PCRE) to be used in word
+    splitting (if \code{NULL}, do nothing).}
   \item{tolower}{option to transform the documents to lowercase (after
     word splitting).}
   \item{marker}{the string used to mark word boundaries.}

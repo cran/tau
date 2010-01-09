@@ -1,3 +1,14 @@
+
+2010-01-xx
+
+    o	Use perl in word splitting in textcnt. This fixes problems
+	with combining characters when using the default split
+	pattern.
+
+2009-10-21
+
+    o	Provide a useBytes argument in textcnt (R >=2.10.x).
+
 2009-09-xx 0.0-4
 
     o	Fixed blank strings in word-sequence counting.

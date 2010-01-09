@@ -40,10 +40,11 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
 	return(NULL)
     method <- match.arg(method)
     if (!is.null(split))
+	x <- 
 	if (!is.null(formals(strsplit)$useBytes))
-	    x <- lapply(lapply(x, strsplit, split, useBytes = useBytes), unlist)
+	    lapply(lapply(x, strsplit, split, perl = TRUE, useBytes = useBytes), unlist)
 	else
-	    x <- lapply(lapply(x, strsplit, split), unlist)
+	    lapply(lapply(x, strsplit, split, perl = TRUE), unlist)
     if (!useBytes && 
         tolower)
         x <- lapply(x, tolower)
