@@ -51,11 +51,35 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
     if (!is.null(words))
         x <- .Call("R_copyTruncate", x, words)
     if (method == "ngram") {
+	if (length(grep(marker, unlist(x, use.names = FALSE), 
+			useBytes = TRUE)))
+	    stop("'marker' contained in 'x'")
+	## <NOTE>
+	## As the C code generates all n-grams up to the specified
+	## length we have to remove padding counts later. [2010/2]
+	## </NOTE>
+	if (marker == "\2") {
+	    ## pad
+	    m <- paste(rep(marker, n - 1L), collapse = "")
+	    x <- lapply(x, function(x) gsub("$(?<!^)", m, x, perl = TRUE,
+					    useBytes = useBytes))  
+	}
         ## add marker at both ends
         x <- lapply(x, function(x) gsub("^(?!$)|$(?<!^)", marker, x,
                                         perl = TRUE, useBytes = useBytes))
         x <- .Call("R_utf8CountNgram", x, n, lower, verbose, persistent, 
 				       useBytes)
+	if (length(x) && marker == "\2") {
+	    ## Determine suffixes
+	    i <- grep("^\2{2,}$", names(x), useBytes = useBytes)
+	    ## Remove
+	    x <- x[-i]
+	    ## Reduce to prefix count
+	    x["\2"] <- x["\2"] / (n + 1L)
+	    ## Replace with default marker
+	    names(x) <- gsub("\2",formals(textcnt)$marker, names(x),
+			     useBytes = useBytes)
+	}
 	## <NOTE>
 	## Because of its design the C code can only adjust the prefix
 	## counts. Here we handle the suffix counts. Obviously, a suffix

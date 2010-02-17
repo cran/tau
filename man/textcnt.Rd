@@ -55,7 +55,8 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   is pre- and appended to word before counting. However, the empty word
   is never marked and therefore not counted. Note that
   \code{marker = "\1"} is reserved for counting of an efficient set
-  of ngrams (see the reference below).
+  of ngrams and \code{marker = "\2"} for the set proposed by Cavnar
+  and Trenkle (see references).
 
   If \code{method = "string"} word-sequences of and only of length
   \code{n} are counted. Therefore, documents with less than \code{n}
@@ -83,8 +84,7 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   incremental counting a change of locale is not allowed (and a change
   in method is not recommended).
 
-  Note that the C implementation counts words into a prefix tree.
-  Whereas this is highly efficient for n-gram, prefix, or suffix counting
+  Note that the C implementation counts words into a prefix tree.  Whereas this is highly efficient for n-gram, prefix, or suffix counting
   it may be less efficient for simple word counting. That is, implementations
   which use hash tables may be more efficient if the dictionary is large.
 
@@ -117,6 +117,12 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
 
   \code{useBytes} may not be fully functional with R versions where
   \code{strsplit} does not support that argument.
+}
+\references{
+  W.B. Cavnar and J.M. Trenkle (1991).
+  N-Gram Based Text Categorization.
+  In Proceedings of SDAIR-94, 3rd Annual Symposium on Document
+  Analysis and Information Retrieval, 161--175.
 }
 \examples{
 ## the classic
@@ -156,7 +162,8 @@ r
 textcnt("is",     n = 3L, marker = "\1")
 textcnt("is",     n = 4L, marker = "\1")
 textcnt("corpus", n = 5L, marker = "\1")
-##
+## CT sets
+textcnt("corpus", n = 5L, marker = "\2")
 }
 \keyword{utilities}
 \keyword{character}

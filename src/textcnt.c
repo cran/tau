@@ -1,7 +1,7 @@
 
 // This is a slight nightmare
 //
-// ceeboo 2008
+// ceeboo 2008 - 2010
 
 #undef __DEBUG
 #define USE_RINTERNALS
@@ -115,7 +115,7 @@ static void cpnfree(CPN *p) {
 
 #define __CBUF_SIZE 1024
 
-static SEXP rval;			// pointer to pairlist
+static SEXP rval, nval;			// pointer to pairlist
 static int tcnt = 0;			// threshold for retrieval
 static unsigned char enc;		// encoding
 static unsigned char cbuf[__CBUF_SIZE];	// token buffer
@@ -134,14 +134,20 @@ static cetype_t get_known_encoding(void) {
     return CE_NATIVE;
 }
 
-/* note that we collect the results in a pairlist
- * as we don't know the number of elements in advance.
- * the list is reversed with respect to the (byte)
- * ordering of the tag strings.
- *
+/*
  * we are damned if we do and we are screwed if we
  * don't set the encoding bit. note that R-2.6.2
  * does not indicate ASCII.
+ *
+ * switched from pairlists to vectors to avoid weird
+ * memory problems. note that the number of nodes is
+ * our best upper bound on the number of results.
+ * clearly, if inc = 0 and/or lower > 0 the number
+ * of results may be much lower and thus more memory
+ * will be wasted. note that the alternative of 
+ * traversing the tree twice comes at the cost of
+ * increased runtime and code complexity and thus
+ * is currently not considered. [2010/02]
  */
 
 static void cpnretprefix(CPN *p, int n) {
@@ -163,12 +169,12 @@ static void cpnretprefix(CPN *p, int n) {
 	if (use_bytes ||
 	    !known_to_be_utf8 ||
 	    !p->pl || (p->pl->index & 0xC0) != 0x80) {
-	    rval = CONS(ScalarInteger(p->count), rval);
+	    INTEGER(rval)[nap] = p->count;
 #ifndef __DEBUG
 	    cbuf[n+1] = 0;
 #endif
-	    SET_TAG(rval, mkCharCE((const char *) cbuf,
-		    get_known_encoding()));
+	    SET_STRING_ELT(nval, nap, mkCharCE((const char *) cbuf,
+					       get_known_encoding()));
 	    nap++;
 	}
 	cpnretprefix(p->pl, n+1);
@@ -187,9 +193,9 @@ static void cpnretprefix(CPN *p, int n) {
  * a given list of character vectors in UTF-8
  * encoding x.
  *
- * returns a pairlist with counts greater than
- * lower as components and the gram strings as
- * names, or R-level NULL.
+ * returns a vector with counts greater than
+ * lower and the gram strings as names, or
+ * R-level NULL.
  *
  * note that we try to copy the strings to a
  * fixed length buffer.
@@ -293,8 +299,9 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 #else
 	    c = (const unsigned char *) CHAR(s);
 #endif
-	    // strings of unknown encoding are not
-	    // translated, so we have to check.
+	    // strings of unknown encoding are not translated
+	    // or strings marked as UTF-8 could be invalid, so
+	    // we have to check.
 	    if (!use_bytes &&
 		known_to_be_utf8 &&
 		_pcre_valid_utf8(c, l) >= 0)
@@ -373,7 +380,9 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	return R_NilValue;
 
     nap  = enc = 0;
-    rval = R_NilValue;
+    rval = PROTECT(allocVector(INTSXP, ncpn));
+    setAttrib(rval, R_NamesSymbol, (nval = allocVector(STRSXP, ncpn)));
+
     cpnretprefix(rpn, 0);
 
     if (ncpn) {
@@ -388,18 +397,21 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	Rprintf(" %i strings [%.2fs]\n", nap,
 		((double) t2 - t1) / CLOCKS_PER_SEC);
 #endif
-    //
-    PROTECT(rval);
-    r = PROTECT(allocVector(INTSXP, nap));
-    setAttrib(r, R_NamesSymbol, (s = allocVector(STRSXP, nap)));
-    while (nap-- > 0) {
-	INTEGER(r)[nap] = INTEGER(CAR(rval))[0];
-	SET_STRING_ELT(s, nap, TAG(rval));
-	rval = CDR(rval);
-    }
-    UNPROTECT(2);
+    // reduce
+    if (nap < LENGTH(rval)) {
+	r = PROTECT(allocVector(INTSXP, nap));
+	setAttrib(r, R_NamesSymbol, (s = allocVector(STRSXP, nap)));
+	while (nap-- > 0) {
+	    INTEGER(r)[nap] = INTEGER(rval)[nap];
+	    SET_STRING_ELT(s, nap, STRING_ELT(nval, nap));
+	}
+	UNPROTECT(2);
 
-    return r;
+	return r;
+    }
+    UNPROTECT(1);
+
+    return rval;
 }
 
 // copy at most n multibytes from the reversed
@@ -446,7 +458,12 @@ static int reverse_copy_utf8(const unsigned char *x, int l, int n) {
 
 // count strings x, their prefixes or suffixes
 // and return counts greater than lower.
-
+//
+// note that for string counting the number of
+// nodes usually will be much greater than the
+// number of result strings. however, we could
+// not determine a better upper bound without 
+// traversing the tree.
 SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 		       SEXP R_verbose, SEXP R_persistent, SEXP R_useBytes) {
     if (!persistent && rpn) {
@@ -601,7 +618,9 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 	return R_NilValue;
 
     nap  = enc = 0;
-    rval = R_NilValue;
+    rval = PROTECT(allocVector(INTSXP, ncpn));
+    setAttrib(rval, R_NamesSymbol, (nval = allocVector(STRSXP, ncpn)));
+
     cpnretprefix(rpn, 0);
 
     if (ncpn) {
@@ -612,34 +631,34 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
     rpn = 0;
 
     // reverse the reversed strings
-    if (type == 2) {
-	r = PROTECT(rval);
-	while (r != R_NilValue) {
-	    s = TAG(r);
+    if (type == 2)
+	for (i = 0; i < nap; i++) {
+	    s = STRING_ELT(nval, i);
 	    reverse_copy_utf8((const unsigned char *) CHAR(s), LENGTH(s), -1);
-	    SET_TAG(r, mkCharCE((const char *) cbuf, getCharCE(s)));
-	    r = CDR(r);
+	    SET_STRING_ELT(nval, i, mkCharCE((const char *) cbuf, 
+					     getCharCE(s)));
 	}
-	UNPROTECT(1);
-    }
 #ifdef _TIME_H
     t2 = clock();
     if (LOGICAL(R_verbose)[0] == TRUE)
 	Rprintf(" %i strings [%.2fs]\n", nap,
 		((double) t2 - t1) / CLOCKS_PER_SEC); 
 #endif
-    // reverse copy pairlist to vector
-    PROTECT(rval);
-    r = PROTECT(allocVector(INTSXP, nap));
-    setAttrib(r, R_NamesSymbol, (s = allocVector(STRSXP, nap)));
-    while (nap-- > 0) {
-	INTEGER(r)[nap] = INTEGER(CAR(rval))[0];
-	SET_STRING_ELT(s, nap, TAG(rval));
-	rval = CDR(rval);
-    }
-    UNPROTECT(2);
+    // reduce
+    if (nap < LENGTH(rval)) {
+	r = PROTECT(allocVector(INTSXP, nap));
+	setAttrib(r, R_NamesSymbol, (s = allocVector(STRSXP, nap)));
+	while (nap-- > 0) {
+	    INTEGER(r)[nap] = INTEGER(rval)[nap];
+	    SET_STRING_ELT(s, nap, STRING_ELT(nval, nap));
+	}
+	UNPROTECT(2);
 
-    return r;
+	return r;
+    }
+    UNPROTECT(1);
+
+    return rval;
 }
 
 /* copy a list of character x and truncate the

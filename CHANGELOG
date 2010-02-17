@@ -1,24 +1,25 @@
 
-2010-01-xx
+2010-02-17
 
-    o	Use perl in word splitting in textcnt. This fixes problems
+    o	Added CT n-gram counting.
+    o	We now use vectors instead of pairlists to avoid memory
+	corruption problems.
+
+2010-01-09
+
+    o	Use perl in word splitting in textcnt. This fixes a problem
 	with combining characters when using the default split
 	pattern.
 
 2009-10-21
 
-    o	Provide a useBytes argument in textcnt (R >=2.10.x).
-
-2009-09-xx 0.0-4
-
+    o	Provide a useBytes argument in textcnt (R >= 2.10.x).
     o	Fixed blank strings in word-sequence counting.
+    o	Added reduced n-gram counting.	
 
 2009-09-04  0.0-3
 
     o	Make Unicode latin ligature translation work "portably".
-
-2009-09-01  0.0-3
-
     o	Migrated encoding utilities.
 
 2009-08-31  0.0-2
