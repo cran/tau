@@ -5,16 +5,19 @@
   Extract language, script, region and variant subtags from IETF
   language tags.
 }
-\usage{parse_IETF_language_tag(x)}
+\usage{parse_IETF_language_tag(x, expand = FALSE)}
 \arguments{
   \item{x}{a character vector with IETF language tags.}
+  \item{expand}{a logical indicating whether to expand subtags into
+    their description(s).}
 }
 \details{
   Internet Engineering Task Force (IETF) language tags are defined by
-  IETF BCP 47, which is currently RFC 4646
-  (\url{http://tools.ietf.org/html/rfc4646}) and RFC 4647
-  (\url{http://tools.ietf.org/html/rfc4646}), and are used in a number
-  of modern standards.
+  IETF BCP 47, which is currently composed by the normative RFC 5646
+  (\url{http://tools.ietf.org/html/rfc5646}) and RFC 4647
+  (\url{http://tools.ietf.org/html/rfc4646}), along with the normative
+  content of the IANA Language Subtag Registry regulated by these RFCs.
+  These tags are used in a number of modern computing standards.
 
   Each language tag is composed of one or more \dQuote{subtags}
   separated by hyphens.  For the basic format currently supported, the
@@ -39,13 +42,14 @@
 
   Note that in particular so-called grandfathered and private use tags
   are currently not supported.
-  
 }
 \value{
-  A character matrix with 4 columns named \code{"Language"},
-  \code{"Script"}, \code{"Region"}, and \code{"Variant"}, giving the
-  corresponding subtags (or \code{NA} if these were missing from the
-  language tag).
+  If \code{expand} is false, a character matrix with 4 columns named
+  \code{"Language"}, \code{"Script"}, \code{"Region"}, and
+  \code{"Variant"}, giving the corresponding subtags (or \code{NA} if
+  these were missing from the language tag).  Otherwise, a character
+  frame with the same 4 columns giving the corresponding descriptions
+  (which may be multiple), and the gives tags as row names.
 }
 \examples{
 ## German as used in Switzerland:
@@ -56,5 +60,7 @@ parse_IETF_language_tag("sr-Latn-CS")
 parse_IETF_language_tag("es-419")
 ## All in one:
 parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"))
+parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"),
+                        expand = TRUE)
 }
 \keyword{utilities}
