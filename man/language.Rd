@@ -20,13 +20,16 @@
   These tags are used in a number of modern computing standards.
 
   Each language tag is composed of one or more \dQuote{subtags}
-  separated by hyphens.  For the basic format currently supported, the
-  subtags occur as follows:
+  separated by hyphens.  Normal language tags have the following
+  subtags:
   \itemize{
-    \item a language subtag
-    \item an optional script subtag
-    \item an optional region subtag
-    \item optional variant subtags
+    \item a language subtag (optionally, with a language extension
+    subtag),
+    \item an optional script subtag,
+    \item an optional region subtag,
+    \item optional variant subtags,
+    \item optional extension subtags,
+    \item an optional private use subtag.
   }
   Language subtags are mainly derived from ISO 639-1 and ISO 639-2,
   script subtags from ISO 15924, and region subtags from ISO 3166-1
@@ -35,21 +38,26 @@
   standard.  The Language Subtag Registry
   (\url{http://www.iana.org/assignments/language-subtag-registry}),
   maintained by the Internet Assigned Numbers Authority (IANA), lists
-  the current valid public subtags.
+  the current valid public subtags, as well as the so-called
+  \dQuote{grandfathered} language tags.  These tags are always replaced
+  by their \dQuote{preferred value}, or \code{NA} if their is none.
 
   See \url{http://en.wikipedia.org/wiki/IETF_language_tag} for more
   information.
-
-  Note that in particular so-called grandfathered and private use tags
-  are currently not supported.
 }
 \value{
-  If \code{expand} is false, a character matrix with 4 columns named
-  \code{"Language"}, \code{"Script"}, \code{"Region"}, and
-  \code{"Variant"}, giving the corresponding subtags (or \code{NA} if
-  these were missing from the language tag).  Otherwise, a character
-  frame with the same 4 columns giving the corresponding descriptions
-  (which may be multiple), and the gives tags as row names.
+  If \code{expand} is false, a list of character vectors of the form
+  \code{"\var{type}=\var{subtag}"}, where \var{type} gives the type of
+  the corresponding subtag (one of \sQuote{Language}, \sQuote{Extlang},
+  \sQuote{Script}, \sQuote{Region}, \sQuote{Variant},
+  \sQuote{Extension}, or \sQuote{Privateuse}).
+
+  Otherwise, a list of lists of character vectors obtained by replacing
+  the subtags by their corresponding descriptions (which may be
+  multiple) from the IANA registry.  Note that no such descriptions for
+  Extension and Privateuse subtags are available in the registry; on the
+  other hand, empty expansions of the other subtags indicate malformed
+  tags (as these subtags must be available in the registry).
 }
 \examples{
 ## German as used in Switzerland:
@@ -61,6 +69,9 @@ parse_IETF_language_tag("es-419")
 ## All in one:
 parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"))
 parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"),
+                        expand = TRUE)
+## Two grandfathered tags allowing replacement by standard tags:
+parse_IETF_language_tag(c("i-klingon", "zh-min-nan"),
                         expand = TRUE)
 }
 \keyword{utilities}
