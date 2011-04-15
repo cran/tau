@@ -69,7 +69,7 @@ function(x, expand = FALSE)
     pos <- pos[ind]
     x <- x[ind]
     
-    while(length(x)) {
+    repeat {
         ## Use a loop so that we can stop when done.
     
         ## Extlang.
@@ -154,7 +154,7 @@ function(x, expand = FALSE)
             x <- x[ind]
             if(!length(x)) break
         }
-        
+
         ## Private use.
         pat <- sprintf("^-%s(-.*|$)", re_privateuse)
         ind <- grepl(pat, x, perl = TRUE)
@@ -169,10 +169,10 @@ function(x, expand = FALSE)
 
         break
     }
-    
+
     if(any(ind <- nzchar(x)))
         stop("Invalid language tag(s):",
-             paste("\n ", names(y)[ind], collapse = "\n"))
+             paste("\n ", names(y)[pos[ind]]))
 
     if(!expand) return(y)
 

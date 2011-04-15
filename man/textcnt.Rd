@@ -11,7 +11,7 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
         tolower = TRUE, marker = "_", words = NULL, lower = 0L,
         method = c("ngram", "string", "prefix", "suffix"),
         recursive = FALSE, persistent = FALSE, useBytes = FALSE,
-        verbose = FALSE, decreasing = FALSE)
+        perl = TRUE, verbose = FALSE, decreasing = FALSE)
 
 \S3method{format}{textcnt}(x, ...)
 }
@@ -33,8 +33,9 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   \item{recursive}{option to compute counts for individual documents
     (default all documents).}
   \item{persistent}{option to count documents incrementally.}
-  \item{useBytes}{option to process byte-by-byte instead 
+  \item{useBytes}{option to process byte-by-byte instead of
     character-by-character.}
+  \item{perl}{option to use PCRE in word splitting.}
   \item{verbose}{option to obtain timing statistics.}
   \item{decreasing}{option to return the counts in decreasing order.}
   \item{\dots}{further (unused) arguments.}
@@ -77,7 +78,8 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   Be aware that the character strings in the documents are translated
   to the encoding of the current locale if the encoding is set (see
   \code{\link{Encoding}}). Therefore, with the possibility of \code{"unknown"}
-  encodings when in an \code{"UTF-8"} locale the code checks if each string
+  encodings when in an \code{"UTF-8"} locale, or invalid \code{"UTF-8"}
+  strings declared to be in \code{"UTF-8"}, the code checks if each string
   is a valid \code{"UTF-8"} string and stops if not. Otherwise, strings
   are processed bytewise without any checks. However, embedded \code{nul}
   bytes are always removed from a string. Finally, note that during
@@ -117,6 +119,9 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
 
   \code{useBytes} may not be fully functional with R versions where
   \code{strsplit} does not support that argument.
+
+  If \code{useBytes = TRUE} the character strings of \code{names} will
+  never be declared to be in an encoding.
 }
 \references{
   W.B. Cavnar and J.M. Trenkle (1991).

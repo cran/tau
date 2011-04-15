@@ -13,20 +13,21 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
          tolower = TRUE, marker = "_", words = NULL, lower = 0L,
          method = c("ngram", "string", "prefix", "suffix"),
          recursive = FALSE, persistent = FALSE, useBytes = FALSE,
-	 verbose = FALSE, decreasing = FALSE)
+	 perl = TRUE, verbose = FALSE, decreasing = FALSE)
 {
     if (is.list(x)) {
         if (recursive) {
             if (persistent) {
                 for (z in x[-length(x)])
                     textcnt(z, n, split, tolower, marker, words, lower,
-                            method, recursive, persistent, useBytes, verbose)
+                            method, recursive, persistent, perl, useBytes, 
+			    verbose)
                 x <- x[length(x)]
                 persistent <- FALSE
             } else
                 return(lapply(x, textcnt, n, split, tolower, marker, words,
                               lower, method, recursive, persistent, useBytes,
-			      verbose))
+			      perl, verbose))
         }
     } else {
         if (is.null(x)) return (x)
@@ -42,9 +43,9 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
     if (!is.null(split))
 	x <- 
 	if (!is.null(formals(strsplit)$useBytes))
-	    lapply(lapply(x, strsplit, split, perl = TRUE, useBytes = useBytes), unlist)
+	    lapply(lapply(x, strsplit, split, perl = perl, useBytes = useBytes), unlist)
 	else
-	    lapply(lapply(x, strsplit, split, perl = TRUE), unlist)
+	    lapply(lapply(x, strsplit, split, perl = perl), unlist)
     if (!useBytes && 
         tolower)
         x <- lapply(x, tolower)
@@ -123,6 +124,7 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
         ## means they are in prefix-tree order.
         if (decreasing)
             sort(x, decreasing = TRUE) -> x
+	attr(x, "useBytes") <- useBytes
         class(x) <- "textcnt"
     }
     x
@@ -135,7 +137,6 @@ function(x, ...)
 	frq = c(x),
 	rank = rank(c(x)),
         bytes = nchar(names(x), type = "bytes", allowNA = TRUE),
-	ascii = is.ascii(names(x)),
 	Encoding = Encoding(names(x)),
         row.names = names(x),
         stringsAsFactors = FALSE
