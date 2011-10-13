@@ -46,7 +46,7 @@ Returns:       < 0    if the string is a valid UTF-8 string
                >= 0   otherwise; the value is the offset of the bad byte
  */
 
-extern int _pcre_valid_utf8(const unsigned char *string, int length);
+extern int tau_pcre_valid_utf8(const unsigned char *string, int length);
 
 // character indexed prefix tree
 
@@ -304,7 +304,7 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	    // we have to check.
 	    if (!use_bytes &&
 		known_to_be_utf8 &&
-		_pcre_valid_utf8(c, l) >= 0)
+		tau_pcre_valid_utf8(c, l) >= 0)
 		error_reset("not a valid UTF-8 string");
 	    /* in an UTF-8 multibyte sequence any byte
 	     * except the first has 10 as its leading bits.
@@ -559,7 +559,7 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 #endif
 	    if (!use_bytes &&
 		known_to_be_utf8 &&
-		_pcre_valid_utf8(c, l) >= 0)
+		tau_pcre_valid_utf8(c, l) >= 0)
 		error_reset("not a valid UTF-8 string");
 	    if (type > 1) {
 		if (reverse_copy_utf8(c, l, n) >= 0)

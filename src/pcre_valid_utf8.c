@@ -83,7 +83,7 @@ Returns:       < 0    if the string is a valid UTF-8 string
 */
 
 int
-_pcre_valid_utf8(const uschar *string, int length)
+tau_pcre_valid_utf8(const uschar *string, int length)
 {
 #ifdef SUPPORT_UTF8
 register const uschar *p;

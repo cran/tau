@@ -23,7 +23,7 @@ static Rboolean latin1locale(void) {
 //
 // adapt this function to indicate ASCII
 
-extern int _pcre_valid_utf8(const unsigned char *string, int length);
+extern int tau_pcre_valid_utf8(const unsigned char *string, int length);
 
 static int _valid_ascii(const unsigned char *s, int l) {
     if (l < 0)
@@ -76,7 +76,7 @@ SEXP R_isUTF8(SEXP x) {
 	if (!l)
 	    LOGICAL(r)[i] = FALSE;
 	else
-	if (_pcre_valid_utf8((const unsigned char *) CHAR(s), l) < 0) {
+	if (tau_pcre_valid_utf8((const unsigned char *) CHAR(s), l) < 0) {
 	    if (_valid_ascii((const unsigned char *) CHAR(s), l) < 0)
 		LOGICAL(r)[i] = FALSE;
 	    else
@@ -111,14 +111,14 @@ SEXP R_fixEncoding(SEXP x, SEXP R_latin1) {
 	e = getCharCE(s);
 	if (l) {
 	    c  = (const unsigned char *) CHAR(s);
-	    if (_pcre_valid_utf8(c, l) < 0) {
+	    if (tau_pcre_valid_utf8(c, l) < 0) {
 		if (_valid_ascii(c, l) < 0) {
 		    // known to be ASCII
 		    if (e != CE_NATIVE)
 			s = mkCharCE(CHAR(s), CE_NATIVE);
 		}
 		else {
-		    // unlikely not to be UTF8 (cf. _pcre_valid_utf8)
+		    // unlikely not to be UTF8 (cf. tau_pcre_valid_utf8)
 		    if (e == CE_NATIVE)
 			s = mkCharCE(CHAR(s), CE_UTF8);
 		}
@@ -169,7 +169,7 @@ SEXP R_isLocale(SEXP x) {
 	    LOGICAL(r)[i] = TRUE;
 	else
 	if (known_to_be_utf8) {
-	    if (_pcre_valid_utf8((const unsigned char *) CHAR(s), l) < 0)
+	    if (tau_pcre_valid_utf8((const unsigned char *) CHAR(s), l) < 0)
 		LOGICAL(r)[i] = TRUE;
 	    else
 		LOGICAL(r)[i] = FALSE;
@@ -207,7 +207,7 @@ SEXP R_translateToLocale(SEXP x) {
 	s = STRING_ELT(x, i);
 	c = translateChar(s);
 	if (c != CHAR(s)) {
-	    if (_pcre_valid_utf8((const unsigned char *) c, -1) < 0) {
+	    if (tau_pcre_valid_utf8((const unsigned char *) c, -1) < 0) {
 		if (_valid_ascii((const unsigned char *) c, -1) < 0)
 		    s = mkCharCE(c, CE_NATIVE);
 		else

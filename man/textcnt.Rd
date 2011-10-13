@@ -124,7 +124,7 @@ textcnt(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
   never be declared to be in an encoding.
 }
 \references{
-  W.B. Cavnar and J.M. Trenkle (1991).
+  W.B. Cavnar and J.M. Trenkle (1994).
   N-Gram Based Text Categorization.
   In Proceedings of SDAIR-94, 3rd Annual Symposium on Document
   Analysis and Information Retrieval, 161--175.
