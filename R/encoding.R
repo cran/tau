@@ -5,21 +5,21 @@
 
 is.ascii <-
 function(x)
-    .Call("R_isASCII", x)
+    .Call(R_isASCII, x)
 
 is.utf8 <-
 function(x)
-    .Call("R_isUTF8", x)
+    .Call(R_isUTF8, x)
 
 ## TODO consider a fixWorkspace function
 
 fixEncoding <-
 function(x, latin1 = FALSE)
-    .Call("R_fixEncoding", x, latin1)
+    .Call(R_fixEncoding, x, latin1)
 
 is.locale <-
 function(x)
-    .Call("R_isLocale", x)
+    .Call(R_isLocale, x)
 
 translate <-
 function(x, recursive = FALSE, internal = FALSE)
@@ -38,7 +38,7 @@ function(x, recursive = FALSE, internal = FALSE)
             })
             as.character(x)
         } else
-            .Call("R_translateToLocale", x)
+            .Call(R_translateToLocale, x)
     }
     else if (is.factor(x))
         levels(x) <- translate(levels(x))

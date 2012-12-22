@@ -1,4 +1,14 @@
-useDynLib("tau")
+useDynLib("tau",
+          "R_isASCII",
+          "R_isUTF8",
+          "R_fixEncoding",
+          "R_isLocale",
+          "R_translateToLocale",
+          "R_copyTruncate",
+          "R_utf8CountNgram", 
+          "R_removeBlank",
+          "R_copyToNgram",
+          "R_utf8CountString")
 export("parse_IETF_language_tag",
        "remove_stopwords",
        "textcnt",
