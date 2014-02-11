@@ -23,8 +23,8 @@
   separated by hyphens.  Normal language tags have the following
   subtags:
   \itemize{
-    \item a language subtag (optionally, with a language extension
-    subtag),
+    \item a language subtag (optionally, with language extension
+    subtags),
     \item an optional script subtag,
     \item an optional region subtag,
     \item optional variant subtags,
@@ -39,8 +39,7 @@
   (\url{http://www.iana.org/assignments/language-subtag-registry}),
   maintained by the Internet Assigned Numbers Authority (IANA), lists
   the current valid public subtags, as well as the so-called
-  \dQuote{grandfathered} language tags.  These tags are always replaced
-  by their \dQuote{preferred value}, or \code{NA} if their is none.
+  \dQuote{grandfathered} language tags.
 
   See \url{http://en.wikipedia.org/wiki/IETF_language_tag} for more
   information.
@@ -49,8 +48,9 @@
   If \code{expand} is false, a list of character vectors of the form
   \code{"\var{type}=\var{subtag}"}, where \var{type} gives the type of
   the corresponding subtag (one of \sQuote{Language}, \sQuote{Extlang},
-  \sQuote{Script}, \sQuote{Region}, \sQuote{Variant},
-  \sQuote{Extension}, or \sQuote{Privateuse}).
+  \sQuote{Script}, \sQuote{Region}, \sQuote{Variant}, or
+  \sQuote{Extension}), or \code{"\var{type}=\var{tag}"} with \var{type}
+  either \sQuote{Privateuse} or \sQuote{Grandfathered}.
 
   Otherwise, a list of lists of character vectors obtained by replacing
   the subtags by their corresponding descriptions (which may be
@@ -70,7 +70,7 @@ parse_IETF_language_tag("es-419")
 parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"))
 parse_IETF_language_tag(c("de-CH", "sr-Latn-CS", "es-419"),
                         expand = TRUE)
-## Two grandfathered tags allowing replacement by standard tags:
+## Two grandfathered tags:
 parse_IETF_language_tag(c("i-klingon", "zh-min-nan"),
                         expand = TRUE)
 }

@@ -5,174 +5,206 @@ function(x, expand = FALSE)
     y <- rep.int(list(character()), n)
     names(y) <- x
 
-    ## Start by expanding grandfathered tags if possible.
-    pos <- match(x,
-                 IANA_language_subtag_registry_grandfathered_table$Tag,
-                 nomatch = 0L)
-    x[pos > 0L] <-
-        IANA_language_subtag_registry_grandfathered_table$"Preferred-Value"[pos]
-    ## This will give NA for grandfathered tags with no replacement.
+    ## How nice should we be?
+    ## Allow for empty or missing elements ...
 
-    pos <- which(!is.na(x))
-
-    if(!length(pos)) {
-        if(expand)
-            y[] <- rep.int(list(list()), n)
-        return(y)
+    pos <- seq_along(x)
+    if(any(ind <- (is.na(x) | (x == "")))) {
+        pos <- pos[!ind]
+        x <- x[pos]
     }
 
-    x <- x[pos]
-
-    ## Non-NA tags should now be as follows:
-    ##   language [-script] [-region] *[-variant] *[-extension] [-privateuse]
+    ## See <http://www.ietf.org/rfc/rfc4646.txt>.
+    ## Language tags can be of the form (in ABNF, see
+    ## <http://tools.ietf.org/rfc/rfc4234.txt>): 
+    ##   langtag / privateuse / grandfathered
     ## where
-    ##   language       2*3ALPHA        ISO 639 (shortest)
-    ##                  [-extlang]      extended language subtag
-    ##                  4ALPHA          reserved for future use
-    ##                  5*8ALPHA        registered language subtag
-    ##   extlang        3*ALPHA         selected ISO 639 codes
-    ##                                  (ignoring permantly reserved)
-    ##   script         4ALPHA          ISO 15924
-    ##   region         2ALPHA          ISO 3166
-    ##                  3DIGIT          UN M.49
-    ##   variant        5*8alphanum     registered variants
-    ##                  DIGIT 3alphanum
-    ##   extension      singleton-2*8ALNUM
-    ##   singleton      ALNUM but not x
-    ##   privateuse     x-1*8ALNUM
+    ##   privateuse    = ("x"/"X") 1*("-" (1*8alphanum))
+    ##   grandfathered = 1*3ALPHA 1*2("-" (2*8alphanum))
 
-    re_language <- "[[:alpha:]]{2,8}"
+    re_privateuse <- "[xX]((-[[:alnum:]]{1,8}){1,})"
+
+    ## Grandfathered tags must really be determined by exact matching.
+
+    ind <- !is.na(match(x,
+                        IANA_language_subtag_registry_grandfathered_table$Tag))
+    if(any(ind)) {
+        y[pos[ind]] <- as.list(sprintf("Grandfathered=%s", x[ind]))
+        x[ind] <- ""
+        pos <- pos[!ind]
+    }
+
+    if(length(pos)) {    
+        pat <- sprintf("^%s$", re_privateuse)
+        ind <- grepl(pat, x, perl = TRUE)
+        if(any(ind)) {
+            y[pos[ind]] <-
+                as.list(sprintf("Privateuse=%s",
+                                substring(x[ind], 3L)))
+            x[ind] <- ""
+            pos <- pos[!ind]
+        }
+    }
+
+    ## Now for the real thing.
+
+    ## Remaining tags should now be as follows:
+    ##   (language
+    ##    ["-" script]
+    ##    ["-" region]
+    ##    *(["-" variant])
+    ##    *(["-" extension])
+    ##    ["-" privateuse]
+    ## where
+    ##   language    = (2*3ALPHA [-extlang])  ; shortest ISO 639 code
+    ##                  / 4ALPHA              ; reserved for future use
+    ##                  / 5*8ALPHA            ; registered language subtag
+    ##   extlang     = *3("-" 3*ALPHA)        ; reserved for future use
+    ##   script      = 4ALPHA                 ; ISO 15924 code
+    ##   region      = 2ALPHA                 ; ISO 3166 code
+    ##                 / 3DIGIT               ; UN M.49 code
+    ##   variant     = 5*8alphanum            ; registered variants
+    ##                 / (DIGIT 3alphanum)
+    ##   extension   = singleton 1*("-" (2*8alphanum))
+    ##   singleton   = %x41-57 / %x59-5A / %x61-77 / %x79-7A / DIGIT
+    ##               ; "a"-"w" / "y"-"z" / "A"-"W" / "Y"-"Z" / "0"-"9"
+
+    ## We handle language/extlang a bit differently (more generously).
+
     re_extlang <- "[[:alpha:]]{3}"
+    re_language <-
+        sprintf("[[:alpha:]]{2,3}(-%s){0,3}|[[:alpha:]]{4,8}", re_extlang)
     re_script <- "[[:alpha:]]{4}"
     re_region <- "[[:alpha:]]{2}|[[:digit:]]{3}"
     re_variant <- "[[:alnum:]]{5,8}|[[:digit:]][[:alnum:]]{3}"
-    re_extension <-
-        "([0123456789ABCDEFGHIJKLMNOPQRSTUVWYZabcdefghijklmnopqrstuvwyz])-([[:alnum:]]{2,8})"
-    re_privateuse <- "(x)-([[:alnum:]]{1,8})"
+    re_singleton <- "[abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789]"
+    re_extension <- sprintf("(%s)(-[[:alnum:]]{2,8}){1,}", re_singleton)
 
-    ## <NOTE>
-    ## There currently seems to be a problem with e.g.
-    ##   grepl("^[[:alpha:]]{2,}", "123")
-    ## in R 2.11.x and R 2.12.x: hence use perl = TRUE.
-    ## </NOTE>
+    bad <- integer()
 
-    ## Language.
-    pat <- sprintf("^(%s)(-.*|$)", re_language)
-    ind <- grepl(pat, x, perl = TRUE)
-    if(!all(ind))
-        stop("Invalid language tag(s):",
-             paste("\n ", x[!ind], collapse = "\n"))
-    y[pos] <-
-        as.list(sprintf("Language=%s", sub(pat, "\\1", x, perl = TRUE)))
-    x <- sub(pat, "\\2", x, perl = TRUE)
-    ind <- nzchar(x)
-    pos <- pos[ind]
-    x <- x[ind]
-    
-    repeat {
-        ## Use a loop so that we can stop when done.
-    
-        ## Extlang.
-        pat <- sprintf("^-(%s)(-.*|$)", re_extlang)
+    if(length(pos)) {
+        pat <- sprintf("^(%s)(-.*|$)", re_language)
         ind <- grepl(pat, x, perl = TRUE)
-        if(any(ind)) {
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Extlang=%s",
-                            sub(pat, "\\1", x[ind], perl = TRUE)))
-            x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
-            ind <- nzchar(x)
-            pos <- pos[ind]
-            x <- x[ind]
-            if(!length(x)) break
+        if(!all(ind)) {
+            bad <- which(!ind)
+            x[bad] <- ""
         }
-        
-        ## Script.
-        pat <- sprintf("^-(%s)(-.*|$)", re_script)
-        ind <- grepl(pat, x, perl = TRUE)
-        if(any(ind)) {
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Script=%s",
-                            sub(pat, "\\1", x[ind], perl = TRUE)))
-            x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
-            ind <- nzchar(x)
-            pos <- pos[ind]
-            x <- x[ind]
-            if(!length(x)) break
-        }
-        
-        ## Region.
-        pat <- sprintf("^-(%s)(-.*|$)", re_region)
-        ind <- grepl(pat, x, perl = TRUE)
-        if(any(ind)) {
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Region=%s",
-                            sub(pat, "\\1", x[ind], perl = TRUE)))
-            x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
-            ind <- nzchar(x)
-            pos <- pos[ind]
-            x <- x[ind]
-            if(!length(x)) break
-        }
-        
-        ## Variant(s).
-        pat <- sprintf("^-(%s)(-.*|$)", re_variant)
-        while(any(ind <- grepl(pat, x, perl = TRUE))) {
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Region=%s",
-                            sub(pat, "\\1", x[ind], perl = TRUE)))
-            x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
-            ind <- nzchar(x)
-            pos <- pos[ind]
-            x <- x[ind]
-            if(!length(x)) break
-        }
-        
-        ## Extension(s).
-        pat <- sprintf("^-%s(-.*|$)", re_extension)
-        while(any(ind <- grepl(pat, x, perl = TRUE))) {
-            ## <NOTE>
-            ## This discards the singleton prefixes for now.
-            ## But storing them as names or in the tags both seems rather
-            ## awkward ...
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Region=%s",
-                            sub(pat, "\\2", x[ind], perl = TRUE)))
-            ## </NOTE>
-            x[ind] <- sub(pat, "\\3", x[ind], perl = TRUE)
-            ind <- nzchar(x)
-            pos <- pos[ind]
-            x <- x[ind]
-            if(!length(x)) break
-        }
-
-        ## Private use.
-        pat <- sprintf("^-%s(-.*|$)", re_privateuse)
-        ind <- grepl(pat, x, perl = TRUE)
-        if(any(ind)) {
-            y[pos[ind]] <-
-                Map(c,
-                    y[pos[ind]],
-                    sprintf("Privateuse=%s",
-                            sub(pat, "\\2", x[ind], perl = TRUE)))
-            x[ind] <- sub(pat, "\\3", x[ind], perl = TRUE)
-        }
-
-        break
+        y[pos[ind]] <-
+            lapply(strsplit(sub(pat, "\\1", x[ind], perl = TRUE),
+                            "-", fixed = TRUE),
+                   function(e) {
+                       c(sprintf("Language=%s", e[1L]),
+                         sprintf("Extension=%s", e[-1L]))
+                   })
+        x[ind] <- sub(pat, "\\3", x[ind], perl = TRUE)
+        ind <- nzchar(x)
+        pos <- pos[ind]
+        x <- x[ind]
     }
 
-    if(any(ind <- nzchar(x)))
+    if(length(pos)) {
+        repeat {
+            ## Use a loop so that we can finally stop when done.
+
+            ## Script.
+            pat <- sprintf("^-(%s)(-.*|$)", re_script)
+            if(any(ind <- grepl(pat, x, perl = TRUE))) {
+                y[pos[ind]] <-
+                    Map(c,
+                        y[pos[ind]],
+                        sprintf("Script=%s",
+                                sub(pat, "\\1", x[ind], perl = TRUE)))
+                x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
+                ind <- nzchar(x)
+                pos <- pos[ind]
+                x <- x[ind]
+                if(!length(x)) break
+            }
+        
+            ## Region.
+            pat <- sprintf("^-(%s)(-.*|$)", re_region)
+            if(any(ind <- grepl(pat, x, perl = TRUE))) {
+                y[pos[ind]] <-
+                    Map(c,
+                        y[pos[ind]],
+                        sprintf("Region=%s",
+                                sub(pat, "\\1", x[ind], perl = TRUE)))
+                x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
+                ind <- nzchar(x)
+                pos <- pos[ind]
+                x <- x[ind]
+                if(!length(x)) break
+            }
+        
+            ## Variant(s).
+            pat <- sprintf("^-(%s)(-.*|$)", re_variant)
+            while(any(ind <- grepl(pat, x, perl = TRUE))) {
+                y[pos[ind]] <-
+                    Map(c,
+                        y[pos[ind]],
+                        sprintf("Variant=%s",
+                                sub(pat, "\\1", x[ind], perl = TRUE)))
+                x[ind] <- sub(pat, "\\2", x[ind], perl = TRUE)
+                ind <- nzchar(x)
+                pos <- pos[ind]
+                x <- x[ind]
+            }
+            if(!length(x)) break
+
+            ## Extension(s).
+            pat <- sprintf("^-%s(-.*|$)", re_extension)
+            while(any(ind <- grepl(pat, x, perl = TRUE))) {
+                ## <NOTE>
+                ## We keep the singleton prefix: this could be used in
+                ## expansions of registered extensions: currently,
+                ##   BCP 47 Extension U <http://tools.ietf.org/html/rfc6067>
+                ##   BCP 47 Extension T <http://tools.ietf.org/html/rfc6497>
+                y[pos[ind]] <-
+                    Map(c,
+                        y[pos[ind]],
+                        sprintf("Extension=%s",
+                                sub(pat, "\\1\\2", x[ind], perl = TRUE)))
+                ## </NOTE>
+                x[ind] <- sub(pat, "\\3", x[ind], perl = TRUE)
+                ind <- nzchar(x)
+                pos <- pos[ind]
+                x <- x[ind]
+            }
+            if(!length(x)) break
+
+            ## Private use.
+            pat <- sprintf("^-%s(-.*|$)", re_privateuse)
+            if(any(ind <- grepl(pat, x, perl = TRUE))) {
+                y[pos[ind]] <-
+                    Map(c,
+                        y[pos[ind]],
+                        sprintf("Privateuse=%s",
+                                substring(sub(pat, "\\1", x[ind],
+                                              perl = TRUE),
+                                          2L)))
+                x[ind] <- sub(pat, "\\4", x[ind], perl = TRUE)
+            }
+
+            break
+        }
+    }
+
+    ## Be a nuisance: singletons for extensions must not be duplicated.
+    ind <- as.logical(lapply(y, function(e) {
+        e <- grep("^Extension=", e, value = TRUE)
+        if(!length(e)) return(FALSE)
+        any(duplicated(sub("^Extension=(.).*", "\\1", e)))
+    }))
+    if(any(ind))
+        bad <- c(bad, which(ind))
+    if(any(ind <- nzchar(x))) {
+        bad <- c(bad, pos[ind])
+    }
+    if(length(bad)) {
         stop("Invalid language tag(s):",
-             paste("\n ", names(y)[pos[ind]]))
+             paste("\n ", names(y)[bad], collapse = " "),
+             call. = FALSE)
+    }
 
     if(!expand) return(y)
 
@@ -183,7 +215,7 @@ function(x, expand = FALSE)
     if(!all(sapply(z, length))) {
         pos <- match(x,
                      IANA_language_subtag_registry_private_use_index_table)
-        z[pos > 0L] <- "Private use"
+        z[pos > 0L | grepl("^privateuse=", x)] <- "Private use"
     }
     z <- Map(`names<-`,
              split(z, rep.int(seq_along(y), sapply(y, length))),
@@ -211,7 +243,11 @@ function(con = "http://www.iana.org/assignments/language-subtag-registry")
     on.exit(close(tcon))
     db <- read.dcf(tcon, all = TRUE)
     ## Add index for lookups.
-    db$Index <- tolower(sprintf("%s=%s", db$Type, db$Subtag))
+    subtag <- db$Subtag
+    db$Index <-
+        tolower(sprintf("%s=%s",
+                        db$Type,
+                        ifelse(is.na(subtag), db$Tag, subtag)))
     db$Type <- factor(db$Type)
     attr(db, "File_Date") <- fdate
     db
