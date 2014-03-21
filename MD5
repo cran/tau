@@ -1,10 +1,10 @@
-f102b4b480388e240d9bc4dd55d985e2 *CHANGELOG
-e6a1dcf1e0df6f575a5d2b039a9681fc *DESCRIPTION
+19e90d14f68a9a0695af4fedabc3cd19 *CHANGELOG
+f4fd9cfae39f8dc21d3c3ebaee7a1dd3 *DESCRIPTION
 657c57ed88e25b8358e2013fe6ec2e38 *NAMESPACE
 b49e2ab25069788c160595b2a992e8e1 *R/encoding.R
 5aea6066c1f4019d43418febbde7daa3 *R/language.R
-ba9c1fe2572ab1751dc0c0535803b8f6 *R/readers.R
-7fb09eb8e80658d9cd89e9fcb00efa5c *R/sysdata.rda
+35abdc103b935b0e5a9b70792be3c8b7 *R/readers.R
+5c97b5cfd98b8be1a9b2c261f06d83f1 *R/sysdata.rda
 1a2d6cfc069e9ac1ecf0326b2a99957a *R/textcnt.R
 536c3d25be0ff80b71d7ba2ed2647d76 *R/translate.R
 257b6e66b679f7393fd31ae61dd1beae *R/util.R
