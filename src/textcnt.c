@@ -46,7 +46,7 @@ Returns:       < 0    if the string is a valid UTF-8 string
                >= 0   otherwise; the value is the offset of the bad byte
  */
 
-extern int tau_pcre_valid_utf8(const unsigned char *string, int length);
+extern long tau_pcre_valid_utf8(const unsigned char *string, long length);
 
 // character indexed prefix tree
 
@@ -239,7 +239,8 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 	error("'persistent' not of type logical");
     if (isNull(R_useBytes) || TYPEOF(R_useBytes) != LGLSXP)
 	error("'useBytes' not of type logical");
-    int h, i, j, k, l, m, n;
+    long l;
+    int h, i, j, k, m, n;
     const unsigned char *c;
     SEXP r, s;
 
@@ -417,7 +418,7 @@ SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
 // copy at most n multibytes from the reversed
 // sequence to the buffer.
 
-static int reverse_copy_utf8(const unsigned char *x, int l, int n) {
+static long reverse_copy_utf8(const unsigned char *x, long l, long n) {
     int h = 0, m = 0;
     if (l < 0)
 	l = strlen((const char *) x);
@@ -485,7 +486,8 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
 	error("'persistent' not of type logical");
     if (isNull(R_useBytes) || TYPEOF(R_useBytes) != LGLSXP)
 	error("'useBytes' not of type logical");
-    int h, i, j, k, l, n = 0, type;
+    long l, n = 0;
+    int h, i, j, k, type;
     const unsigned char *c;
     SEXP r, s;
 

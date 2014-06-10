@@ -82,8 +82,8 @@ Returns:       < 0    if the string is a valid UTF-8 string
                >= 0   otherwise; the value is the offset of the bad byte
 */
 
-int
-tau_pcre_valid_utf8(const uschar *string, int length)
+long
+tau_pcre_valid_utf8(const uschar *string, long length)
 {
 #ifdef SUPPORT_UTF8
 register const uschar *p;

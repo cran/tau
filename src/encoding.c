@@ -23,15 +23,16 @@ static Rboolean latin1locale(void) {
 //
 // adapt this function to indicate ASCII
 
-extern int tau_pcre_valid_utf8(const unsigned char *string, int length);
+extern long tau_pcre_valid_utf8(const unsigned char *string, long length);
 
-static int _valid_ascii(const unsigned char *s, int l) {
+static long _valid_ascii(const unsigned char *s, long l) {
+    register const unsigned char *p;
     if (l < 0)
 	l = strlen((const char *) s);
-    while (l-- > 0)
-	if (*s++ > 0x7F)
-	    break;
-    return l;
+    for (p = s; l-- > 0; p++)
+	if (*p > 0x7F)
+	    return p - s;
+    return -1;
 }
 
 // test for ASCII
