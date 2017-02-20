@@ -220,8 +220,8 @@ static void error_reset(const char *msg) {
     error(msg);
 }
 
-SEXP R_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
-		      SEXP R_persistent, SEXP R_useBytes) {
+SEXP tau_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
+			SEXP R_persistent, SEXP R_useBytes) {
     if (!persistent && rpn) {
 	cpnfree(rpn);
 	rpn = 0;
@@ -465,8 +465,8 @@ static long reverse_copy_utf8(const unsigned char *x, long l, long n) {
 // number of result strings. however, we could
 // not determine a better upper bound without 
 // traversing the tree.
-SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
-		       SEXP R_verbose, SEXP R_persistent, SEXP R_useBytes) {
+SEXP tau_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
+			 SEXP R_verbose, SEXP R_persistent, SEXP R_useBytes) {
     if (!persistent && rpn) {
 	cpnfree(rpn);
 	rpn = 0;
@@ -671,7 +671,7 @@ SEXP R_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
  * the object(s).
  */
 
-SEXP R_copyTruncate(SEXP x, SEXP R_n) {
+SEXP tau_copyTruncate(SEXP x, SEXP R_n) {
     if (isNull(x) || TYPEOF(x) != VECSXP)
 	error("'x' not of type list");
     if (isNull(R_n) || TYPEOF(R_n) != INTSXP)
@@ -719,7 +719,7 @@ SEXP R_copyTruncate(SEXP x, SEXP R_n) {
 // move a window of length n over a vector of
 // character and copy each into a list.
 
-SEXP R_copyToNgram(SEXP x, SEXP R_n) {
+SEXP tau_copyToNgram(SEXP x, SEXP R_n) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     if (TYPEOF(R_n) != INTSXP)
@@ -748,7 +748,7 @@ SEXP R_copyToNgram(SEXP x, SEXP R_n) {
 
 // remove blank strings from a vector of character.
 
-SEXP R_removeBlank(SEXP x) {
+SEXP tau_removeBlank(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, n;

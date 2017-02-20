@@ -24,33 +24,33 @@ t2 <- c(paste("_", t1[1:2], "_", sep = ""), t1[3:4])
 t2
 
 ## count n-grams
-r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE, TRUE)
+r <- .Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## incremental
-.Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, TRUE, TRUE)
-r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE, TRUE)
+.Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, TRUE, TRUE)
+r <- .Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## count strings
-r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE, TRUE)
+r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## count prefixes
-r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 1L, TRUE, FALSE, TRUE)
+r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 1L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## count suffixes
-r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 2L, TRUE, FALSE, TRUE)
+r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 2L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## FIXME add to interface
-r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 3L, TRUE, FALSE, TRUE)
+r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 3L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ## incremental
-.Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, TRUE, TRUE)
-r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE, TRUE)
+.Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, TRUE, TRUE)
+r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, FALSE, TRUE)
 .format.count(r)
 
 ###

@@ -38,8 +38,8 @@ Type 'q()' to quit R.
 [1] "_abc_" "_aÄ_"  ""      NA     
 > 
 > ## count n-grams
-> r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE, FALSE)
-counting ... 9 string(s= using 16 nodes [0.00s]
+> r <- .Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, FALSE, FALSE)
+counting ... 9 string(s) using 16 nodes [0.00s]
 writing  ... 16 strings [0.00s]
 > .format.count(r)
     counts bytes encoding
@@ -61,11 +61,11 @@ c_       1     2  unknown
 Ä_       1     2   latin1
 > 
 > ## incremental
-> .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, TRUE, FALSE)
-counting ... 9 string(s= using 16 nodes [0.00s]
+> .Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, TRUE, FALSE)
+counting ... 9 string(s) using 16 nodes [0.00s]
 NULL
-> r <- .Call("R_utf8CountNgram", list(t2), 3L, 0L, TRUE, FALSE, FALSE)
-counting ... 9 string(s= using 16 nodes [0.00s]
+> r <- .Call(tau:::tau_utf8CountNgram, list(t2), 3L, 0L, TRUE, FALSE, FALSE)
+counting ... 9 string(s) using 16 nodes [0.00s]
 writing  ... 16 strings [0.00s]
 > .format.count(r)
     counts bytes encoding
@@ -87,7 +87,7 @@ c_       2     2  unknown
 Ä_       2     2   latin1
 > 
 > ## count strings
-> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE, FALSE)
+> r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, FALSE, FALSE)
 counting ... 2 string(s) using 4 nodes [0.00s]
 writing  ... 2 strings [0.00s]
 > .format.count(r)
@@ -96,7 +96,7 @@ abc      1     3  unknown
 aÄ       1     2   latin1
 > 
 > ## count prefixes
-> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 1L, TRUE, FALSE, FALSE)
+> r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 1L, TRUE, FALSE, FALSE)
 counting ... 2 string(s) using 4 nodes [0.00s]
 writing  ... 4 strings [0.00s]
 > .format.count(r)
@@ -107,7 +107,7 @@ abc      1     3  unknown
 aÄ       1     2   latin1
 > 
 > ## count suffixes
-> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 2L, TRUE, FALSE, FALSE)
+> r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 2L, TRUE, FALSE, FALSE)
 counting ... 2 string(s) using 5 nodes [0.00s]
 writing  ... 5 strings [0.00s]
 > .format.count(r)
@@ -119,7 +119,7 @@ abc      1     3  unknown
 aÄ       1     2   latin1
 > 
 > ## FIXME add to interface
-> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 3L, TRUE, FALSE, FALSE)
+> r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 3L, TRUE, FALSE, FALSE)
 counting ... 2 string(s) using 5 nodes [0.00s]
 writing  ... 5 strings [0.00s]
 > .format.count(r)
@@ -131,10 +131,10 @@ cba      1     3  unknown
 Äa       1     2   latin1
 > 
 > ## incremental
-> .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, TRUE, FALSE)
+> .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, TRUE, FALSE)
 counting ... 2 string(s) using 4 nodes [0.00s]
 NULL
-> r <- .Call("R_utf8CountString", list(t1), 3L, 0L, 0L, TRUE, FALSE, FALSE)
+> r <- .Call(tau:::tau_utf8CountString, list(t1), 3L, 0L, 0L, TRUE, FALSE, FALSE)
 counting ... 2 string(s) using 4 nodes [0.00s]
 writing  ... 2 strings [0.00s]
 > .format.count(r)

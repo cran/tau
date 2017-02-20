@@ -50,7 +50,7 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
         tolower)
         x <- lapply(x, tolower)
     if (!is.null(words))
-        x <- .Call(R_copyTruncate, x, words)
+        x <- .Call(tau_copyTruncate, x, words)
     if (method == "ngram") {
 	if (length(grep(marker, unlist(x, use.names = FALSE), 
 			useBytes = TRUE)))
@@ -61,14 +61,14 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
 	## </NOTE>
 	if (marker == "\2") {
 	    ## pad
-	    m <- paste(rep(marker, n - 1L), collapse = "")
+	    m <- paste(rep.int(marker, n - 1L), collapse = "")
 	    x <- lapply(x, function(x) gsub("$(?<!^)", m, x, perl = TRUE,
 					    useBytes = useBytes))  
 	}
         ## add marker at both ends
         x <- lapply(x, function(x) gsub("^(?!$)|$(?<!^)", marker, x,
                                         perl = TRUE, useBytes = useBytes))
-        x <- .Call(R_utf8CountNgram, x, n, lower, verbose, persistent, 
+        x <- .Call(tau_utf8CountNgram, x, n, lower, verbose, persistent, 
 				       useBytes)
 	if (length(x) && marker == "\2") {
 	    ## Determine suffixes
@@ -108,14 +108,14 @@ function(x, n = 3L, split = "[[:space:][:punct:][:digit:]]+",
         ## preprocess 
 	if (method == "string" && n > 1L) 
 	    x <- lapply(x, function(x) {
-		x <- .Call(R_removeBlank, x)
-		x <- unlist(lapply(.Call(R_copyToNgram, x, n), paste,
+		x <- .Call(tau_removeBlank, x)
+		x <- unlist(lapply(.Call(tau_copyToNgram, x, n), paste,
 		    	           collapse = " "))
 		if (is.null(x))
 		    x <- ""
 		x
 	    })
-        x <- .Call(R_utf8CountString, x, n, lower,
+        x <- .Call(tau_utf8CountString, x, n, lower,
                    match(method, c("string", "prefix", "suffix")) - 1L, 
                    verbose, persistent, useBytes)
     }

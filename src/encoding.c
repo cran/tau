@@ -38,7 +38,7 @@ static long _valid_ascii(const unsigned char *s, long l) {
 // test for ASCII
 //
 
-SEXP R_isASCII(SEXP x) {
+SEXP tau_isASCII(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, l;
@@ -65,7 +65,7 @@ SEXP R_isASCII(SEXP x) {
 //
 // shame on R that we have to provide this!
 
-SEXP R_isUTF8(SEXP x) {
+SEXP tau_isUTF8(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, l;
@@ -95,7 +95,7 @@ SEXP R_isUTF8(SEXP x) {
 // Adapt the declared encoding of a vector of strings
 // to the most likely / desired scenario.
 
-SEXP R_fixEncoding(SEXP x, SEXP R_latin1) {
+SEXP tau_fixEncoding(SEXP x, SEXP R_latin1) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     if (TYPEOF(R_latin1) != LGLSXP)
@@ -155,7 +155,7 @@ SEXP R_fixEncoding(SEXP x, SEXP R_latin1) {
 // Test if the strings of a vector are in the encoding of
 // the current locale.
 
-SEXP R_isLocale(SEXP x) {
+SEXP tau_isLocale(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, l;
@@ -195,7 +195,7 @@ SEXP R_isLocale(SEXP x) {
 //
 // Shame on R that we have to provide this!
 
-SEXP R_translateToLocale(SEXP x) {
+SEXP tau_translateToLocale(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, n;
