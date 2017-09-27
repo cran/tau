@@ -21,12 +21,12 @@ static Rboolean known_to_be_latin1 = FALSE;
 static Rboolean use_bytes = FALSE;
 
 // workaround missing API functions [2009/8]
-static Rboolean utf8locale(void) {
+static Rboolean tau_utf8locale(void) {
     return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
 		R_GlobalEnv), 1));
 }
 
-static Rboolean latin1locale(void) {
+static Rboolean tau_latin1locale(void) {
     return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
 		R_GlobalEnv), 2));
 }
@@ -245,15 +245,15 @@ SEXP tau_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
     SEXP r, s;
 
     if (!persistent) {
-	known_to_be_utf8   = utf8locale();
-	known_to_be_latin1 = latin1locale();
+	known_to_be_utf8   = tau_utf8locale();
+	known_to_be_latin1 = tau_latin1locale();
 	use_bytes          = *LOGICAL(R_useBytes);
     } else
     if (use_bytes != *LOGICAL(R_useBytes))
 	error("change of useBytes in persistent mode");
     else
-    if (known_to_be_utf8   != utf8locale() ||
-	known_to_be_latin1 != latin1locale())
+    if (known_to_be_utf8   != tau_utf8locale() ||
+	known_to_be_latin1 != tau_latin1locale())
 	error_reset("change of locale in persistent mode");
     persistent = LOGICAL(R_persistent)[0];
 
@@ -492,15 +492,15 @@ SEXP tau_utf8CountString(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_type,
     SEXP r, s;
 
     if (!persistent) {
-	known_to_be_utf8   = utf8locale();
-	known_to_be_latin1 = latin1locale();
+	known_to_be_utf8   = tau_utf8locale();
+	known_to_be_latin1 = tau_latin1locale();
 	use_bytes          = *LOGICAL(R_useBytes);
     } else
     if (use_bytes != *LOGICAL(R_useBytes))
 	error("change of useBytes in persistent mode");
     else
-    if (known_to_be_utf8   != utf8locale() ||
-        known_to_be_latin1 != latin1locale())
+    if (known_to_be_utf8   != tau_utf8locale() ||
+        known_to_be_latin1 != tau_latin1locale())
 	error_reset("change of locale in persistent mode");
     persistent = LOGICAL(R_persistent)[0];
 

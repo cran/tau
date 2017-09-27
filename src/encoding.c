@@ -9,12 +9,12 @@
 // see textcnt.c
 
 // workaround missing API functions [2009/8]
-static Rboolean utf8locale(void) {
+static Rboolean tau_utf8locale(void) {
     return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
 		R_GlobalEnv), 1));
 }
 
-static Rboolean latin1locale(void) {
+static Rboolean tau_latin1locale(void) {
     return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
 		R_GlobalEnv), 2));
 }
@@ -159,8 +159,8 @@ SEXP tau_isLocale(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, l;
-    int known_to_be_latin1 = latin1locale();
-    int known_to_be_utf8 = utf8locale();
+    int known_to_be_latin1 = tau_latin1locale();
+    int known_to_be_utf8 = tau_utf8locale();
     SEXP s, r = PROTECT(allocVector(LGLSXP, LENGTH(x)));
 
     for (i = 0; i < LENGTH(x); i++) {
@@ -199,7 +199,7 @@ SEXP tau_translateToLocale(SEXP x) {
     if (TYPEOF(x) != STRSXP)
 	error("'x' not of type character");
     int i, n;
-    int known_to_be_latin1 = latin1locale();
+    int known_to_be_latin1 = tau_latin1locale();
     const char *c;
     SEXP s, r = PROTECT(allocVector(STRSXP, LENGTH(x)));
     
