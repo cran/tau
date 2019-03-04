@@ -10,13 +10,19 @@
 
 // workaround missing API functions [2009/8]
 static Rboolean tau_utf8locale(void) {
-    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
-		R_GlobalEnv), 1));
+    SEXP call, ans;
+    PROTECT(call = LCONS(install("l10n_info"), R_NilValue));
+    ans = eval(call, R_GlobalEnv);
+    UNPROTECT(1);
+    return *LOGICAL(VECTOR_ELT(ans, 1));
 }
 
 static Rboolean tau_latin1locale(void) {
-    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
-		R_GlobalEnv), 2));
+    SEXP call, ans;
+    PROTECT(call = LCONS(install("l10n_info"), R_NilValue));
+    ans = eval(call, R_GlobalEnv);
+    UNPROTECT(1);
+    return *LOGICAL(VECTOR_ELT(ans, 2));
 }
 
 // FIXME

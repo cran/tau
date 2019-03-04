@@ -22,13 +22,19 @@ static Rboolean use_bytes = FALSE;
 
 // workaround missing API functions [2009/8]
 static Rboolean tau_utf8locale(void) {
-    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
-		R_GlobalEnv), 1));
+    SEXP call, ans;
+    PROTECT(call = LCONS(install("l10n_info"), R_NilValue));
+    ans = eval(call, R_GlobalEnv);
+    UNPROTECT(1);
+    return *LOGICAL(VECTOR_ELT(ans, 1));
 }
 
 static Rboolean tau_latin1locale(void) {
-    return  *LOGICAL(VECTOR_ELT(eval(LCONS(install("l10n_info"), R_NilValue),
-		R_GlobalEnv), 2));
+    SEXP call, ans;
+    PROTECT(call = LCONS(install("l10n_info"), R_NilValue));
+    ans = eval(call, R_GlobalEnv);
+    UNPROTECT(1);
+    return *LOGICAL(VECTOR_ELT(ans, 2));
 }
 
 /* FIXME
@@ -694,12 +700,14 @@ SEXP tau_copyTruncate(SEXP x, SEXP R_n) {
 	    for (k = 0; k < n; k++)
 		SET_STRING_ELT(t, k, STRING_ELT(s, k));
 	    copyMostAttrib(t, s);
-	    if ((s = getAttrib(s, R_NamesSymbol)) != R_NilValue) {
+	    PROTECT(s = getAttrib(s, R_NamesSymbol));
+	    if (s != R_NilValue) {
 		SEXP v;
 		setAttrib(t, R_NamesSymbol, (v = allocVector(STRSXP, n)));
 		for (k = 0; k < n; k++)
 		    SET_STRING_ELT(v, k, STRING_ELT(s, k));
 	    }
+	    UNPROTECT(1);
 	} else
 	    SET_VECTOR_ELT(r, i, s);
     }

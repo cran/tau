@@ -1,9 +1,8 @@
-61d4b13e458fc88b06108deca2bb6acb *CHANGELOG
-dfa4e52108c84bb802b25d66d4f472eb *DESCRIPTION
+c98b8ae58a63357c1d59feada06172d1 *DESCRIPTION
 5a4bb1dcfd33e9e850aa34dbd26fda9a *NAMESPACE
 f548aa94cec9a94d059ae11de88555f0 *R/encoding.R
 35abdc103b935b0e5a9b70792be3c8b7 *R/readers.R
-2bfa50aa72b1bf67dff807b50c241708 *R/sysdata.rda
+9ad1910255acdeccd8dd182d79504916 *R/sysdata.rda
 1c66dcc7eab9e3d0ea922d25a1d1aa24 *R/textcnt.R
 536c3d25be0ff80b71d7ba2ed2647d76 *R/translate.R
 257b6e66b679f7393fd31ae61dd1beae *R/util.R
@@ -12,10 +11,10 @@ f548aa94cec9a94d059ae11de88555f0 *R/encoding.R
 515b59b19589d779d30aa222453c36ba *man/textcnt.Rd
 f440dc23b8460a38a9fffdbadaa8a487 *man/translate.Rd
 40e85dc8abdeda39b3287fb3543d3028 *man/util.Rd
-fbd967d901bea9cff9a1ffdd0a6a1757 *src/encoding.c
+66812c6e1661f0222d1cbcdcbc1ed48f *src/encoding.c
 942150885716802c4f82e627e4332260 *src/init.c
 057e434fdb64d1c560b4ea58873e415e *src/pcre_valid_utf8.c
-4367c4b9a9de4a163883273fe2f8b0e6 *src/textcnt.c
+57fa54155e3be602a2fa995c1ed42283 *src/textcnt.c
 e58243754bad475ef4c1a7adb88ac743 *tests/counting.R
 375245f991ad44cfb108fae4a73816f9 *tests/counting.Rout.save
 03292fb10ab76658734798eb97e3aa81 *tests/counting.Rout.save.latin1
