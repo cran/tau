@@ -12,7 +12,7 @@
 \details{
   In typography, a ligature occurs where two or more
   graphemes are joined as a single glyph.  (See
-  \url{http://en.wikipedia.org/wiki/Typographic_ligature} for more
+  \url{https://en.wikipedia.org/wiki/Typographic_ligature} for more
   information.)
 
   Unicode (\url{http://www.unicode.org/}) lists the following
