@@ -1,4 +1,4 @@
-\name{translate}
+\name{ligatures}
 \alias{translate_Unicode_latin_ligatures}
 \title{Translate Unicode Latin Ligatures}
 \description{
