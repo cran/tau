@@ -3,7 +3,7 @@
 
 #include <R.h>
 
-#define USE_RINTERNALS
+// #define USE_RINTERNALS
 #include <Rinternals.h>
 
 // see textcnt.c
@@ -148,7 +148,7 @@ SEXP tau_fixEncoding(SEXP x, SEXP R_latin1) {
 		s = mkCharCE(CHAR(s), CE_NATIVE);
 	}
 	SET_STRING_ELT(r, i, s);
-	if (s != VECTOR_ELT(x, i))
+	if (s != STRING_ELT(x, i))
 	    n++;
 	R_CheckUserInterrupt();
     }

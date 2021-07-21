@@ -4,7 +4,7 @@
 // ceeboo 2008 - 2010
 
 #undef __DEBUG
-#define USE_RINTERNALS
+// #define USE_RINTERNALS
 
 #include <R.h>
 #include <Rinternals.h>
