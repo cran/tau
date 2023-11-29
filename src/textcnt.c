@@ -223,7 +223,7 @@ static void error_reset(const char *msg) {
     cpnfree(rpn);
     rpn = 0;
     persistent = FALSE;
-    error(msg);
+    error("%s", msg);
 }
 
 SEXP tau_utf8CountNgram(SEXP x, SEXP R_n, SEXP R_lower, SEXP R_verbose,
