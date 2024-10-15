@@ -1,5 +1,5 @@
 Package: tau
-Version: 0.0-25
+Version: 0.0-26
 Encoding: UTF-8
 Title: Text Analysis Utilities
 Authors@R: c(person("Christian", "Buchta", role = "aut"),
@@ -12,7 +12,7 @@ Description: Utilities for text analysis.
 Suggests: tm
 License: GPL-2
 NeedsCompilation: yes
-Packaged: 2023-11-29 10:41:30 UTC; hornik
+Packaged: 2024-10-15 06:55:07 UTC; hornik
 Author: Christian Buchta [aut],
   Kurt Hornik [aut, cre] (<https://orcid.org/0000-0003-4198-9911>),
   Ingo Feinerer [aut],
@@ -20,4 +20,4 @@ Author: Christian Buchta [aut],
 Maintainer: Kurt Hornik <Kurt.Hornik@R-project.org>
 Depends: R (>= 2.10)
 Repository: CRAN
-Date/Publication: 2023-11-29 11:55:32 UTC
+Date/Publication: 2024-10-15 07:35:10 UTC

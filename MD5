@@ -1,8 +1,8 @@
-5971436a4b18df5353009c2fcba19e9f *DESCRIPTION
+df17644dcb0613bb29685c806da13fb3 *DESCRIPTION
 5a4bb1dcfd33e9e850aa34dbd26fda9a *NAMESPACE
 f548aa94cec9a94d059ae11de88555f0 *R/encoding.R
 35abdc103b935b0e5a9b70792be3c8b7 *R/readers.R
-c0e7146f06b5aa4102ac57e48d1a348c *R/sysdata.rda
+5f85bf6ce67effe2a8ddf71715c63a26 *R/sysdata.rda
 1c66dcc7eab9e3d0ea922d25a1d1aa24 *R/textcnt.R
 536c3d25be0ff80b71d7ba2ed2647d76 *R/translate.R
 257b6e66b679f7393fd31ae61dd1beae *R/util.R
@@ -14,7 +14,7 @@ c0e7146f06b5aa4102ac57e48d1a348c *R/sysdata.rda
 8fc5dccb81e48a6f374d8f2729f2fe9d *src/encoding.c
 942150885716802c4f82e627e4332260 *src/init.c
 057e434fdb64d1c560b4ea58873e415e *src/pcre_valid_utf8.c
-759dbf2f8cfd99b803341b514c712ae3 *src/textcnt.c
+a641c3db7e1338789f12343e401810ab *src/textcnt.c
 e58243754bad475ef4c1a7adb88ac743 *tests/counting.R
 375245f991ad44cfb108fae4a73816f9 *tests/counting.Rout.save
 03292fb10ab76658734798eb97e3aa81 *tests/counting.Rout.save.latin1

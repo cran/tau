@@ -8,6 +8,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
 #include <time.h>
 
 // character translation
@@ -715,11 +716,15 @@ SEXP tau_copyTruncate(SEXP x, SEXP R_n) {
 
     if (!t)
 	return x;
-    
+
+#if R_VERSION < R_Version(4, 5, 0)
     SET_ATTRIB(r, ATTRIB(x));
     SET_OBJECT(r, OBJECT(x));
     if (IS_S4_OBJECT(x))
 	SET_S4_OBJECT(r);
+#else
+    DUPLICATE_ATTRIB(r, x);
+#endif
 
     return r;
 }
